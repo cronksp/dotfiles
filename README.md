@@ -1,2 +1,2 @@
-# dot-files
+# dotfiles
 general dot files repo
