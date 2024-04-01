@@ -163,7 +163,8 @@ alias update='sudo apt-get update && sudo apt-get upgrade'
 #export environment variables
 #export MY_VARIABLE="some value"
 
-
+#log the time the .zshrc file was executed
+echo "$(date) -- .zshrc executed" >> $HOME/.zshrc.log
 
 #KEEP THIS AT THE EOF
 source $ZSH/oh-my-zsh.sh
