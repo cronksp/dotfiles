@@ -142,10 +142,13 @@ alias python='python3'
 alias pip='pip3'
 
 #export virtualenvwrapper commands
-export VIRTUALENVWRAPPER_PYTHON=/Library/Frameworks/Python.framework/Versions/3.11/bin/python3
+#Uncomment the below lines to use virtualenvwrapper on MacOS
+#export VIRTUALENVWRAPPER_PYTHON=/Library/Frameworks/Python.framework/Versions/3.11/bin/python3
+export VIRTUALENVWRAPPER_VIRTUALENV=/usr/local/bin/python3
+
 export WORKON_HOME=$HOME/.virtualenvs
 export PROJECT_HOME=$HOME/Documents/dev
-source /Library/Frameworks/Python.framework/Versions/3.11/bin/virtualenvwrapper.sh
+source /usr/local/bin/virtualenvwrapper.sh
 
 #virtualenvwrapper alias's
 alias mkv='mkvirtualenv'
