@@ -108,7 +108,8 @@ verify_directory(){
 
 verify_runtime
 
-files=("$HOME/.zshrc" "$HOME/.gitconfig" "$HOME/.gitignore" "$HOME/.editorconfig" "$HOME/.editorconfig" "$HOME/.npmrc" "$HOME/.zshenv")
+#files=("$HOME/.zshrc" "$HOME/.gitconfig" "$HOME/.gitignore" "$HOME/.editorconfig" "$HOME/.editorconfig" "$HOME/.npmrc" "$HOME/.zshenv")
+files=("$HOME/.zshrc" "$HOME/.zshenv")
 
 for f in "${files[@]}"
 do
