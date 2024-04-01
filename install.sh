@@ -134,7 +134,7 @@ grab_fonts(){
 verify_runtime
 
 #files=("$HOME/.zshrc" "$HOME/.gitconfig" "$HOME/.gitignore" "$HOME/.editorconfig" "$HOME/.editorconfig" "$HOME/.npmrc" "$HOME/.zshenv")
-files=("$HOME/.zshrc" "$HOME/.zshenv")
+files=("$HOME/.zshrc" "$HOME/.zshenv") "$HOME/.zprofile"
 
 for f in "${files[@]}"
 do
@@ -147,6 +147,7 @@ info "Linking dotfiles"
 #link_file "${working_dir}/git/ignore" "${HOME}/.gitignore"
 link_file "${working_dir}/zsh/.zshrc" "${HOME}/.zshrc"
 link_file "${working_dir}/zsh/.zshenv" "${HOME}/.zshenv"
+link_file "${working_dir}/zsh/.zprofile" "${HOME}/.zprofile"
 #link_file "${working_dir}/editorconfig/config" "${HOME}/.editorconfig"
 #link_file "${working_dir}/npm/config" "${HOME}/.npmrc"
 #verify_directory $HOME/.azure/
