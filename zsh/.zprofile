@@ -4,6 +4,7 @@
 PATH="/Library/Frameworks/Python.framework/Versions/3.11/bin:${PATH}"
 export PATH
 
-ZDOTDIR=~/Documents/dev/repos/dotfiles/zsh
+#ZDOTDIR=~/Documents/dev/repos/dotfiles/zsh
+ZDOTDIR=~/dotfiles/zsh
 
 eval "$(/opt/homebrew/bin/brew shellenv)"
