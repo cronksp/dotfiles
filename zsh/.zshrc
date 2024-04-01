@@ -130,7 +130,7 @@ alias zshrcconfig='code ~/.zshrc'
 #dev alias
 alias dev='cd ~/Documents/dev'
 #dotfiles alias
-alias dotfiles='cd ~/.dotfiles'
+alias dotfiles='cd ~/dotfiles'
 #loadz reloads the zshrc file
 alias loadz='source ~/.zshrc'
 #ls -G show without owner info
