@@ -1,7 +1,11 @@
 #!/bin/bash
+### This script is based on the following:https://github.com/ThorstenHans/dotfiles/blob/master/install.sh ###
+# This script installs the dotfiles in this repository via symlinks
+# It also installs oh-my-zsh and some plugins, powerline fonts
 
 # Exit immediately if a command exits with a non-zero status.
 set -e
+
 # capture working directory
 working_dir=$(pwd)
 dependencies=(curl zsh git)
@@ -87,6 +91,7 @@ verify_runtime(){
         *)
         {
             error "Unsupported OS"
+            #TODO add support for other OS (windows, etc.)
         };;
     esac
 }
@@ -106,6 +111,7 @@ verify_directory(){
     fi
 }
 
+# grab powerline fonts
 grab_fonts(){
     info "Grabbing powerline fonts"
     info "https://github.com/powerline/fonts.git"
@@ -123,11 +129,9 @@ grab_fonts(){
     ./install.sh
     info "moving back to tempFonts directory && removing fonts directory"
     cd .. && rm -rf fonts
-    
-    #success print if no error
-    if [ $? -eq 0 ]; then
-        success "Powerline fonts installed"
-    fi
+    info "moving back to working directory && removing tempFonts directory"
+    cd $working_dir && rm -rf ~/tempFonts
+    success "Powerline fonts installed"
 
     }
 
@@ -135,16 +139,24 @@ install_oh_my_zsh(){
     # oh-my-zsh & plugins
     info "Installing oh-my-zsh"
     wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
+    success "oh-my-zsh installed"
 
     info "Installing zsh-autosuggestions & zsh-syntax-highlighting"
     zsh -c 'git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions'
     zsh -c 'git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting'
-    
-    success "oh-my-zsh installed"
+    success "zsh-autosuggestions & zsh-syntax-highlighting installed"
+
     }
 
-
+# verify runtime environment
 verify_runtime
+
+#install fonts
+grab_fonts
+
+# oh-my-zsh & plugins
+install_oh_my_zsh
+
 
 #files=("$HOME/.zshrc" "$HOME/.gitconfig" "$HOME/.gitignore" "$HOME/.editorconfig" "$HOME/.editorconfig" "$HOME/.npmrc" "$HOME/.zshenv")
 files=("$HOME/.zshrc" "$HOME/.zshenv" "$HOME/.zprofile")
@@ -168,10 +180,7 @@ link_file "${working_dir}/zsh/.zprofile" "${HOME}/.zprofile"
 #verify_directory $HOME/.config/gh
 #link_file "${working_dir}/github-cli/config" "${HOME}/.config/gh/config.yml"
 
-grab_fonts
 
-# oh-my-zsh & plugins
-install_oh_my_zsh
 
 success "All done! 🚀"
 
