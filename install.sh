@@ -164,6 +164,7 @@ files=("$HOME/.zshrc" "$HOME/.zshenv" "$HOME/.zprofile")
 for f in "${files[@]}"
 do
 	backup_file $f
+    #BUG - this is not working as expected, only the first in the list is backed up
 done
 
 info "Linking dotfiles"
