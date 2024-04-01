@@ -134,7 +134,7 @@ grab_fonts(){
 verify_runtime
 
 #files=("$HOME/.zshrc" "$HOME/.gitconfig" "$HOME/.gitignore" "$HOME/.editorconfig" "$HOME/.editorconfig" "$HOME/.npmrc" "$HOME/.zshenv")
-files=("$HOME/.zshrc" "$HOME/.zshenv") "$HOME/.zprofile"
+files=("$HOME/.zshrc" "$HOME/.zshenv" "$HOME/.zprofile")
 
 for f in "${files[@]}"
 do
