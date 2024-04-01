@@ -111,9 +111,17 @@ grab_fonts(){
     info "https://github.com/powerline/fonts.git"
 
     # powerline fonts for zsh agnoster theme
+    info "creating tempFonts directory"
+    cd ~ && verify_directory ~/tempFonts
+    info "move to tempFonts directory"
+    cd ~/tempFonts
+    info "cloning powerline fonts"
     git clone https://github.com/powerline/fonts.git
+    info "moving to fonts directory"
     cd fonts
+    info "installing powerline fonts"
     ./install.sh
+    info "moving back to tempFonts directory && removing fonts directory"
     cd .. && rm -rf fonts
     
     #success print if no error
