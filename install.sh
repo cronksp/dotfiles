@@ -131,6 +131,19 @@ grab_fonts(){
 
     }
 
+install_oh_my_zsh(){
+    # oh-my-zsh & plugins
+    info "Installing oh-my-zsh"
+    wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
+
+    info "Installing zsh-autosuggestions & zsh-syntax-highlighting"
+    zsh -c 'git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions'
+    zsh -c 'git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting'
+    
+    success "oh-my-zsh installed"
+    }
+
+
 verify_runtime
 
 #files=("$HOME/.zshrc" "$HOME/.gitconfig" "$HOME/.gitignore" "$HOME/.editorconfig" "$HOME/.editorconfig" "$HOME/.npmrc" "$HOME/.zshenv")
@@ -156,6 +169,9 @@ link_file "${working_dir}/zsh/.zprofile" "${HOME}/.zprofile"
 #link_file "${working_dir}/github-cli/config" "${HOME}/.config/gh/config.yml"
 
 grab_fonts
+
+# oh-my-zsh & plugins
+install_oh_my_zsh
 
 success "All done! 🚀"
 
