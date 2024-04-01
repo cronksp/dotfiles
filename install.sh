@@ -106,6 +106,23 @@ verify_directory(){
     fi
 }
 
+grab_fonts(){
+    info "Grabbing powerline fonts"
+    info "https://github.com/powerline/fonts.git"
+
+    # powerline fonts for zsh agnoster theme
+    git clone https://github.com/powerline/fonts.git
+    cd fonts
+    ./install.sh
+    cd .. && rm -rf fonts
+    
+    #success print if no error
+    if [ $? -eq 0 ]; then
+        success "Powerline fonts installed"
+    fi
+
+    }
+
 verify_runtime
 
 #files=("$HOME/.zshrc" "$HOME/.gitconfig" "$HOME/.gitignore" "$HOME/.editorconfig" "$HOME/.editorconfig" "$HOME/.npmrc" "$HOME/.zshenv")
@@ -128,6 +145,8 @@ link_file "${working_dir}/zsh/.zshenv" "${HOME}/.zshenv"
 #link_file "${working_dir}/azure-cli/config" "${HOME}/.azure/config"
 #verify_directory $HOME/.config/gh
 #link_file "${working_dir}/github-cli/config" "${HOME}/.config/gh/config.yml"
+
+grab_fonts
 
 success "All done! 🚀"
 
