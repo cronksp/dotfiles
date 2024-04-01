@@ -121,7 +121,7 @@ info "Linking dotfiles"
 #link_file "${working_dir}/git/config" "${HOME}/.gitconfig"
 #link_file "${working_dir}/git/ignore" "${HOME}/.gitignore"
 link_file "${working_dir}/zsh/.zshrc" "${HOME}/.zshrc"
-link file "${working_dir}/zsh/.zshenv" "${HOME}/.zshenv"
+link_file "${working_dir}/zsh/.zshenv" "${HOME}/.zshenv"
 #link_file "${working_dir}/editorconfig/config" "${HOME}/.editorconfig"
 #link_file "${working_dir}/npm/config" "${HOME}/.npmrc"
 #verify_directory $HOME/.azure/
