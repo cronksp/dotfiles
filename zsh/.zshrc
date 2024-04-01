@@ -130,14 +130,16 @@ alias zshrcconfig='code ~/.zshrc'
 #dev alias
 alias dev='cd ~/Documents/dev'
 #dotfiles alias
-alias dotfiles='cd ~/dotfiles'
+alias dotfiles='cd ~/Documents/dev/repos/dotfiles'
 #loadz reloads the zshrc file
 alias loadz='source ~/.zshrc'
+alias loadb='source ~/.bashrc'
 #ls -G show without owner info
 alias ls='ls -G'
 
 #python alias's
 alias python='python3'
+alias pip='pip3'
 
 #export virtualenvwrapper commands
 export VIRTUALENVWRAPPER_PYTHON=/Library/Frameworks/Python.framework/Versions/3.11/bin/python3
