@@ -118,16 +118,16 @@ done
 
 info "Linking dotfiles"
 
-link_file "${working_dir}/git/config" "${HOME}/.gitconfig"
-link_file "${working_dir}/git/ignore" "${HOME}/.gitignore"
+#link_file "${working_dir}/git/config" "${HOME}/.gitconfig"
+#link_file "${working_dir}/git/ignore" "${HOME}/.gitignore"
 link_file "${working_dir}/zsh/.zshrc" "${HOME}/.zshrc"
 link file "${working_dir}/zsh/.zshenv" "${HOME}/.zshenv"
-link_file "${working_dir}/editorconfig/config" "${HOME}/.editorconfig"
-link_file "${working_dir}/npm/config" "${HOME}/.npmrc"
-verify_directory $HOME/.azure/
-link_file "${working_dir}/azure-cli/config" "${HOME}/.azure/config"
-verify_directory $HOME/.config/gh
-link_file "${working_dir}/github-cli/config" "${HOME}/.config/gh/config.yml"
+#link_file "${working_dir}/editorconfig/config" "${HOME}/.editorconfig"
+#link_file "${working_dir}/npm/config" "${HOME}/.npmrc"
+#verify_directory $HOME/.azure/
+#link_file "${working_dir}/azure-cli/config" "${HOME}/.azure/config"
+#verify_directory $HOME/.config/gh
+#link_file "${working_dir}/github-cli/config" "${HOME}/.config/gh/config.yml"
 
 success "All done! 🚀"
 
