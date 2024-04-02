@@ -159,6 +159,8 @@ alias cpv='cpvirtualenv'
 alias dve='deactivate'
 alias wkv='workon'
 
+#Navigation alias's
+alias wrk='cd /workspaces'
 
 #commonly used commands
 alias update='sudo apt-get update && sudo apt-get upgrade'
