@@ -141,8 +141,8 @@ alias ls='ls -G'
 alias python='python3'
 alias pip='pip3'
 
-# Check if python3 interpreter is executable
-if [[ -x "$(command -v python3)" ]]; then
+# Check if node is installed, if not handle virtualenvwrapper
+if ! [[ -x "$(command -v node)" ]]; then
     #export virtualenvwrapper commands
     #Uncomment the below lines to use virtualenvwrapper on MacOS
     #export VIRTUALENVWRAPPER_PYTHON=/Library/Frameworks/Python.framework/Versions/3.11/bin/python3
