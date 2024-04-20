@@ -141,15 +141,12 @@ alias ls='ls -G'
 alias python='python3'
 alias pip='pip3'
 
-# Check if python3 command exists
-if command -v python3 &>/dev/null; then
-    # If python3 exists, set up virtualenvwrapper
-
+# Check if python3 interpreter is executable
+if [[ -x "$(command -v python3)" ]]; then
     #export virtualenvwrapper commands
     #Uncomment the below lines to use virtualenvwrapper on MacOS
     #export VIRTUALENVWRAPPER_PYTHON=/Library/Frameworks/Python.framework/Versions/3.11/bin/python3
     export VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python3
-
     export WORKON_HOME=$HOME/.virtualenvs
     export PROJECT_HOME=$HOME/Documents/dev
     source /usr/local/bin/virtualenvwrapper.sh
