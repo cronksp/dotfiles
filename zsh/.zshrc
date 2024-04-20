@@ -141,14 +141,19 @@ alias ls='ls -G'
 alias python='python3'
 alias pip='pip3'
 
-#export virtualenvwrapper commands
-#Uncomment the below lines to use virtualenvwrapper on MacOS
-#export VIRTUALENVWRAPPER_PYTHON=/Library/Frameworks/Python.framework/Versions/3.11/bin/python3
-export VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python3
+# Check if python3 command exists
+if command -v python3 &>/dev/null; then
+    # If python3 exists, set up virtualenvwrapper
 
-export WORKON_HOME=$HOME/.virtualenvs
-export PROJECT_HOME=$HOME/Documents/dev
-source /usr/local/bin/virtualenvwrapper.sh
+    #export virtualenvwrapper commands
+    #Uncomment the below lines to use virtualenvwrapper on MacOS
+    #export VIRTUALENVWRAPPER_PYTHON=/Library/Frameworks/Python.framework/Versions/3.11/bin/python3
+    export VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python3
+
+    export WORKON_HOME=$HOME/.virtualenvs
+    export PROJECT_HOME=$HOME/Documents/dev
+    source /usr/local/bin/virtualenvwrapper.sh
+fi
 
 #virtualenvwrapper alias's
 alias mkv='mkvirtualenv'
@@ -173,3 +178,6 @@ echo "$(date) -- .zshrc executed" >> $HOME/.zshrc.log
 
 #KEEP THIS AT THE EOF
 source $ZSH/oh-my-zsh.sh
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
