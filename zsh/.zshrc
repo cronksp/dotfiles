@@ -173,8 +173,11 @@ alias update='sudo apt-get update && sudo apt-get upgrade'
 #log the time the .zshrc file was executed
 echo "$(date) -- .zshrc executed" >> $HOME/.zshrc.log
 
-#KEEP THIS AT THE EOF
-source $ZSH/oh-my-zsh.sh
+#nvm stuff
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+
+#KEEP THIS AT THE EOF
+source $ZSH/oh-my-zsh.sh
