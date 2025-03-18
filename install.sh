@@ -153,8 +153,14 @@ install_oh_my_zsh(){
 # installs Starship prompt
 install_starship() {
     info "Installing Starship prompt"
-    curl -fsSL https://starship.rs/install.sh | bash -s -- -y
-    success "Starship prompt installed"
+    if curl -fsSL https://starship.rs/install.sh | bash -s -- -y; then
+        success "Starship prompt installed"
+        # Verify Starship version
+        starship_version=$(starship --version)
+        info "Starship version: $starship_version"
+    else
+        error "Failed to install Starship prompt"
+    fi
 }
 # creates a symlink for starship.toml
 link_starship_config() {
