@@ -184,6 +184,9 @@ grab_fonts
 # oh-my-zsh & plugins
 install_oh_my_zsh
 
+# starship prompt
+install_starship
+
 # link starship.toml
 link_starship_config
 
