@@ -148,6 +148,33 @@ install_oh_my_zsh(){
 
     }
 
+
+# cronksp - starship is a cross-shell prompt, cooler than oh-my-zsh
+# installs Starship prompt
+install_starship() {
+    info "Installing Starship prompt"
+    curl -fsSL https://starship.rs/install.sh | bash -s -- -y
+    success "Starship prompt installed"
+}
+# creates a symlink for starship.toml
+link_starship_config() {
+    info "Linking starship.toml"
+    STARSHIP_CONFIG_DIR="$HOME/.config/starship"
+    STARSHIP_CONFIG_FILE="$STARSHIP_CONFIG_DIR/starship.toml"
+    DOTFILES_DIR="$working_dir"
+
+    # Create the target directory if it doesn't exist
+    verify_directory "$STARSHIP_CONFIG_DIR"
+
+    # Remove any existing symlink or file at the target location
+    if [ -L "$STARSHIP_CONFIG_FILE" ] || [ -e "$STARSHIP_CONFIG_FILE" ]; then
+        rm -f "$STARSHIP_CONFIG_FILE"
+    fi
+
+    # Create the symlink
+    link_file "$DOTFILES_DIR/starship/.config/starship.toml" "$STARSHIP_CONFIG_FILE"
+}
+
 # verify runtime environment
 verify_runtime
 
@@ -157,6 +184,8 @@ grab_fonts
 # oh-my-zsh & plugins
 install_oh_my_zsh
 
+# link starship.toml
+link_starship_config
 
 #files=("$HOME/.zshrc" "$HOME/.gitconfig" "$HOME/.gitignore" "$HOME/.editorconfig" "$HOME/.editorconfig" "$HOME/.npmrc" "$HOME/.zshenv")
 files=("$HOME/.zshrc" "$HOME/.zshenv" "$HOME/.zprofile")
