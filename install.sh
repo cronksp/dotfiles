@@ -99,7 +99,7 @@ verify_runtime(){
 # creates a file link
 link_file(){
     info "Linking $2"
-    ln -sfv $1 $2 > /dev/null
+    ln -sfT $1 $2
     success "$2 linked"
 }
 
@@ -174,7 +174,7 @@ link_starship_config() {
     verify_directory "$STARSHIP_CONFIG_DIR"
 
     # Remove any existing symlink or file at the target location
-    if [ -L "$STARSHIP_CONFIG_FILE" ] || [ -e "$STARSHIP_CONFIG_FILE" ]; then
+    if [ -L "$STARSHIP_CONFIG_FILE" ] || [ -e "$STARSHIP_CONFIG_FILE"; then
         rm -f "$STARSHIP_CONFIG_FILE"
     fi
 
@@ -208,19 +208,18 @@ done
 
 info "Linking dotfiles"
 
-#link_file "${working_dir}/git/config" "${HOME}/.gitconfig"
-#link_file "${working_dir}/git/ignore" "${HOME}/.gitignore"
 link_file "${working_dir}/zsh/.zshrc" "${HOME}/.zshrc"
 link_file "${working_dir}/zsh/.zshenv" "${HOME}/.zshenv"
 link_file "${working_dir}/zsh/.zprofile" "${HOME}/.zprofile"
+
+#link_file "${working_dir}/git/config" "${HOME}/.gitconfig"
+#link_file "${working_dir}/git/ignore" "${HOME}/.gitignore"
 #link_file "${working_dir}/editorconfig/config" "${HOME}/.editorconfig"
 #link_file "${working_dir}/npm/config" "${HOME}/.npmrc"
 #verify_directory $HOME/.azure/
 #link_file "${working_dir}/azure-cli/config" "${HOME}/.azure/config"
 #verify_directory $HOME/.config/gh
 #link_file "${working_dir}/github-cli/config" "${HOME}/.config/gh/config.yml"
-
-
 
 success "All done! 🚀"
 
