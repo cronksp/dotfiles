@@ -145,13 +145,22 @@ alias pip='pip3'
 
 # Check if node is installed, if not handle virtualenvwrapper
 if ! [[ -x "$(command -v node)" ]]; then
-    #export virtualenvwrapper commands
-    #Uncomment the below lines to use virtualenvwrapper on MacOS
-    #export VIRTUALENVWRAPPER_PYTHON=/Library/Frameworks/Python.framework/Versions/3.11/bin/python3
-    export VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python3
-    export WORKON_HOME=$HOME/.virtualenvs
-    export PROJECT_HOME=$HOME/Documents/dev
-    source /usr/local/bin/virtualenvwrapper.sh
+    # Check if Python is installed, if not handle virtualenvwrapper
+    if command -v python3 &> /dev/null; then
+        # Export virtualenvwrapper commands
+        # Uncomment the below lines to use virtualenvwrapper on MacOS
+        # export VIRTUALENVWRAPPER_PYTHON=/Library/Frameworks/Python.framework/Versions/3.11/bin/python3
+        export VIRTUALENVWRAPPER_PYTHON=$(command -v python3)
+        export WORKON_HOME=$HOME/.virtualenvs
+        export PROJECT_HOME=$HOME/Documents/dev
+        if [ -f /usr/local/bin/virtualenvwrapper.sh ]; then
+            source /usr/local/bin/virtualenvwrapper.sh
+        else
+            #echo "Warning: virtualenvwrapper.sh not found at /usr/local/bin/virtualenvwrapper.sh"
+        fi
+    else
+        echo "Warning: Python3 is not installed. Skipping virtualenvwrapper setup."
+    fi
 fi
 
 #virtualenvwrapper alias's
@@ -180,8 +189,10 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-# Initialize Starship prompt
+
+#KEEP THIS NEAR THE EOF - Sources OMZ
+source $ZSH/oh-my-zsh.sh
+
+# Initialize Starship prompt - CrossPlatform prompt wrapper
 eval "$(starship init zsh)"
 
-#KEEP THIS AT THE EOF
-source $ZSH/oh-my-zsh.sh
