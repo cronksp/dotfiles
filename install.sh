@@ -154,7 +154,7 @@ install_oh_my_zsh(){
 install_starship() {
     info "Installing Starship prompt"
     #curl --cacert /etc/ssl/certs/ca-certificates.crt -sSL
-    if curl --cacert /etc/ssl/certs/ca-certificates.crt -fsSL https://starship.rs/install.sh | bash -s -- -y; then
+    if curl --cacert /etc/ssl/certs/ca-certificates.crt -fsSL https://starship.rs/install.sh | sh -s -- -y; then
         success "Starship prompt installed"
         # Verify Starship version
         starship_version=$(starship --version)
