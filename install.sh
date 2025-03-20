@@ -1,14 +1,14 @@
 #!/bin/bash
 ### This script is based on the following:https://github.com/ThorstenHans/dotfiles/blob/master/install.sh ###
 # This script installs the dotfiles in this repository via symlinks
-# It also installs oh-my-zsh and some plugins, powerline fonts
+# It also installs oh-my-zsh and some plugins, powerline fonts, and Nerd Fonts
 
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
 # capture working directory
 working_dir=$(pwd)
-dependencies=(curl zsh git)
+dependencies=(curl zsh git unzip)
 
 # prints an info to the screen
 info() {
@@ -112,7 +112,7 @@ verify_directory(){
 }
 
 # grab powerline fonts
-grab_fonts(){
+grab_powerline_fonts(){
     info "Grabbing powerline fonts"
     info "https://github.com/powerline/fonts.git"
 
@@ -132,8 +132,36 @@ grab_fonts(){
     info "moving back to working directory && removing tempFonts directory"
     cd $working_dir && rm -rf ~/tempFonts
     success "Powerline fonts installed"
+}
 
-    }
+# grab nerd fonts
+grab_nerd_fonts(){
+    info "Grabbing Nerd Fonts"
+    info "https://github.com/ryanoasis/nerd-fonts"
+
+    # nerd fonts
+    info "creating tempNerdFonts directory"
+    cd ~ && verify_directory ~/tempNerdFonts
+    info "move to tempNerdFonts directory"
+    cd ~/tempNerdFonts
+    info "downloading Nerd Fonts"
+    wget https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/Meslo.zip
+    wget https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/FiraCode.zip
+    wget https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/RobotoMono.zip
+    info "unzipping Nerd Fonts"
+    unzip Meslo.zip -d Meslo
+    unzip FiraCode.zip -d FiraCode
+    unzip RobotoMono.zip -d RobotoMono
+    info "installing Nerd Fonts"
+    cp Meslo/*.ttf ~/.local/share/fonts/
+    cp FiraCode/*.ttf ~/.local/share/fonts/
+    cp RobotoMono/*.ttf ~/.local/share/fonts/
+    info "updating font cache"
+    fc-cache -fv
+    info "removing tempNerdFonts directory"
+    cd $working_dir && rm -rf ~/tempNerdFonts
+    success "Nerd Fonts installed"
+}
 
 install_oh_my_zsh(){
     # oh-my-zsh & plugins
@@ -212,7 +240,8 @@ link_starship_config() {
 verify_runtime
 
 #install fonts
-grab_fonts
+grab_powerline_fonts
+grab_nerd_fonts
 
 # oh-my-zsh & plugins
 install_oh_my_zsh
@@ -228,7 +257,7 @@ files=("$HOME/.zshrc" "$HOME/.zshenv" "$HOME/.zprofile")
 
 for f in "${files[@]}"
 do
-	backup_file $f
+    backup_file $f
     #BUG - this is not working as expected, only the first in the list is backed up
 done
 
