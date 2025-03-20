@@ -138,15 +138,41 @@ grab_fonts(){
 install_oh_my_zsh(){
     # oh-my-zsh & plugins
     info "Installing oh-my-zsh"
+
+    # Check if the .oh-my-zsh directory exists
+    if [ -d "$HOME/.oh-my-zsh" ]; then
+        info ".oh-my-zsh directory already exists"
+        read -p "Do you want to remove the existing .oh-my-zsh directory? (y/n): " choice
+        if [ "$choice" = "y" ]; then
+            rm -rf "$HOME/.oh-my-zsh"
+            info "Removed existing .oh-my-zsh directory"
+        else
+            error "Installation aborted. Please remove or rename the existing .oh-my-zsh directory and try again."
+            return
+        fi
+    fi
+
     wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
     success "oh-my-zsh installed"
 
     info "Installing zsh-autosuggestions & zsh-syntax-highlighting"
-    zsh -c 'git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions'
-    zsh -c 'git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting'
-    success "zsh-autosuggestions & zsh-syntax-highlighting installed"
 
-    }
+    # Remove existing zsh-autosuggestions directory if it exists
+    if [ -d "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" ]; then
+        info "Removing existing zsh-autosuggestions directory"
+        rm -rf "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions"
+    fi
+    zsh -c 'git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions'
+
+    # Remove existing zsh-syntax-highlighting directory if it exists
+    if [ -d "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" ]; then
+        info "Removing existing zsh-syntax-highlighting directory"
+        rm -rf "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting"
+    fi
+    zsh -c 'git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting'
+
+    success "zsh-autosuggestions & zsh-syntax-highlighting installed"
+}
 
 
 # cronksp - starship is a cross-shell prompt, cooler than oh-my-zsh
@@ -174,7 +200,7 @@ link_starship_config() {
     verify_directory "$STARSHIP_CONFIG_DIR"
 
     # Remove any existing symlink or file at the target location
-    if [ -L "$STARSHIP_CONFIG_FILE" ] || [ -e "$STARSHIP_CONFIG_FILE"; then
+    if [ -L "$STARSHIP_CONFIG_FILE" ] || [ -e "$STARSHIP_CONFIG_FILE"]; then
         rm -f "$STARSHIP_CONFIG_FILE"
     fi
 
