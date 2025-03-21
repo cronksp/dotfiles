@@ -10,7 +10,7 @@ export LC_CTYPE="en_US.UTF-8"
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-ZSH_THEME="agnoster"
+#ZSH_THEME="cloud"
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -102,30 +102,6 @@ plugins=(git)
 
 
 
-############################################ LEAVE COMMENTED ############################################
-#set the prompt to show the username, current working directory, time, and git branch
-#PROMPT='%n: %W: %1~ %# '
-
-# Load version control information
-#autoload -Uz vcs_info
-#precmd() { vcs_info }
-
-# Format the vcs_info_msg_0_ variable
-#zstyle ':vcs_info:git:*' formats 'on %b'
-
-# Set up the prompt (with git branch name)
-#setopt PROMPT_SUBST
-#PROMPT='%n at %W in ${PWD/#$HOME/~} ${vcs_info_msg_0_}
-#%# '
-
-#%n = username
-#%W = time
-#%# = prompt admin or user
-#${PWD/#$HOME/~} = current working directory
-#$vcs_info_msg_0_ = git branch name
-#########################################################################################################
-
-
 #alias's
 #edit .zshrc
 alias zshrcconfig='code ~/.zshrc'
@@ -145,7 +121,7 @@ alias pip='pip3'
 
 # Check if node is installed, if not handle virtualenvwrapper
 if ! [[ -x "$(command -v node)" ]]; then
-    # Check if Python is installed, if not handle virtualenvwrapper
+    # Check if Python is installed, if so handle virtualenvwrapper
     if command -v python3 &> /dev/null; then
         # Export virtualenvwrapper commands
         # Uncomment the below lines to use virtualenvwrapper on MacOS
@@ -183,6 +159,8 @@ alias update='sudo apt-get update && sudo apt-get upgrade'
 
 #log the time the .zshrc file was executed
 echo "$(date) -- .zshrc executed" >> $HOME/.zshrc.log
+#log the time the .zshrc file was executed to the terminal
+echo "$(date) -- .zshrc executed"
 
 #nvm stuff
 export NVM_DIR="$HOME/.nvm"
@@ -195,4 +173,6 @@ source $ZSH/oh-my-zsh.sh
 
 # Initialize Starship prompt - CrossPlatform prompt wrapper
 eval "$(starship init zsh)"
+# Initialize Starship prompt with explicit config path
+# eval "$(starship init zsh --config ~/.config/starship/starship.toml)"
 
