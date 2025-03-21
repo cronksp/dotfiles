@@ -173,9 +173,9 @@ export NVM_DIR="$HOME/.nvm"
 #KEEP THIS NEAR THE EOF - Sources OMZ
 source $ZSH/oh-my-zsh.sh
 
-export STARSHIP_CONFIG=~/.config/starship.toml
+# Set Starship as the prompt
+# Export the Starship configuration file path to a non-default location
+export STARSHIP_CONFIG=~/.config/starship/starship.toml
 # Initialize Starship prompt - CrossPlatform prompt wrapper
 eval "$(starship init zsh)"
-# Initialize Starship prompt with explicit config path
-# eval "$(starship init zsh --config ~/.config/starship/starship.toml)"
 
