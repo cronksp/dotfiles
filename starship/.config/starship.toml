@@ -70,7 +70,7 @@ style = "bg:color_orange fg:color_fg0"
 
 
 [os.symbols]
-Windows = "🪟"           # Alternative: Window emoji
+Windows = "🪟"          # Alternative: Window emoji
 Ubuntu = "🐧"           # Alternative: Penguin emoji
 SUSE = "🦎"             # Alternative: Lizard emoji
 Raspbian = "🍓"         # Alternative: Strawberry emoji
