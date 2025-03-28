@@ -80,13 +80,13 @@ Manjaro = "🌲"          # Alternative: Evergreen Tree emoji
 Linux = "🐧"            # Alternative: Penguin emoji
 Gentoo = "🌀"           # Alternative: Cyclone emoji
 Fedora = "🎩"           # Alternative: Top Hat emoji
-Alpine = "🏔️"           # Alternative: Mountain emoji
+Alpine = "🏔️"          # Alternative: Mountain emoji
 Amazon = "🛒"           # Alternative: Shopping Cart emoji
 Android = "🤖"          # Alternative: Robot Face emoji
 Arch = "🏹"             # Alternative: Bow and Arrow emoji
 Artix = "🌀"            # Alternative: Cyclone emoji
 EndeavourOS = "🚀"      # Alternative: Rocket emoji
-CentOS = "🎛️"           # Alternative: Control Knobs emoji
+CentOS = "🎛️"          # Alternative: Control Knobs emoji
 Debian = "🌀"           # Alternative: Cyclone emoji
 Redhat = "🎩"           # Alternative: Top Hat emoji
 RedHatEnterprise = "🎩" # Alternative: Top Hat emoji
@@ -119,7 +119,14 @@ format = '[[ $symbol $branch ](fg:color_fg0 bg:color_aqua)]($style)'
 
 [git_status]
 style = "bg:color_aqua"
-format = '[[($all_status$ahead_behind )](fg:color_fg0 bg:color_aqua)]($style)'
+format = '[[($conflicted$stashed$modified$staged$untracked$ahead_behind )](fg:color_fg0 bg:color_aqua)]($style)'
+conflicted = "⚔️ $count"
+stashed = "📦 $count"
+modified = "✏️ $count"
+staged = "✔️ $count"
+untracked = "❓$count"
+ahead = "⇡ $count"
+behind = "⇣ $count"
 
 [nodejs]
 symbol = ""
