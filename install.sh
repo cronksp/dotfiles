@@ -325,7 +325,15 @@ install_starship() {
             # Linux
             if command -v apt &> /dev/null; then
                 # Debian/Ubuntu
-                sudo apt update -q && sudo apt install -y starship
+                #sudo apt update -q && sudo apt install -y starship
+                if curl --cacert /etc/ssl/certs/ca-certificates.crt -fsSL https://starship.rs/install.sh | sh -s -- -y; then
+                    success "Starship prompt installed"
+                    # Verify Starship version
+                    starship_version=$(starship --version)
+                    info "Starship version: $starship_version"
+                else
+                    error "Failed to install Starship prompt"
+                fi
             elif command -v dnf &> /dev/null; then
                 # Fedora
                 sudo dnf install -y starship
