@@ -9,6 +9,9 @@ set -e
 # capture working directory
 working_dir=$(pwd)
 dependencies=(curl zsh git unzip)
+os_type=$(uname)
+
+
 
 # prints an info to the screen
 info() {
@@ -52,6 +55,7 @@ verify_homebrew(){
     fi
 }
 
+# TODO - review this function
 # verifies that dependencies are installed on the Mac
 verify_mac_dependencies(){
     for lib in "${dependencies[@]}"
@@ -62,6 +66,7 @@ verify_mac_dependencies(){
     done
 }
 
+# TODO - review this function
 # verifies that dependencies are installed on Linux
 verify_linux_dependencies(){
     sudo apt update -q > /dev/null
@@ -75,18 +80,28 @@ verify_linux_dependencies(){
 
 # verifies environment and installs dependencies (os specific)
 verify_runtime(){
-    os_type=$(uname)
+    #os_type=$(uname)
     case "$os_type" in 
         "Darwin")
         {
-            info "Running on MacOS"
+            info "Running on MacOS - Verifying Dependencies"
+            sleep 2
             verify_homebrew
             verify_mac_dependencies
+            install_fonts
+            # TODO - review os specific installs
+            install_terminal_tools
+            os_specific_installs_macOS
         } ;;
         "Linux" )
         {
-            info "Running on Linux"
+            info "Running on Linux - Verifying Dependencies"
+            sleep 2
             verify_linux_dependencies
+            install_fonts
+            # TODO - review os specific installs
+            install_terminal_tools
+            os_specific_installs_linux
         };;
         *)
         {
@@ -96,10 +111,55 @@ verify_runtime(){
     esac
 }
 
+# installs fonts
+install_fonts(){
+    info "Installing fonts"
+    grab_powerline_fonts
+    # get_nerd_fonts based on OS
+    #os_type=$(uname)  # this might not be needed here, its already set in verify_runtime
+    case "$os_type" in 
+        "Darwin")
+        {
+            info "Running on MacOS"
+            grab_nerd_fonts_on_macOS
+        } ;;
+        "Linux" )
+        {
+            info "Running on Linux"
+            grab_nerd_fonts
+        };;
+        *)
+        {
+            error "Unsupported OS"
+            #TODO add support for other OS (windows, etc.)
+        };;
+    esac
+}
+
+# installs dependencies on macOS
+os_specific_installs_macOS(){
+    info "Installing OS specific tools on MacOS"
+}
+
+# installs dependencies on Linux
+os_specific_installs_linux(){
+    info "Installing OS specific tools on Linux"
+}
+
+# installs terminal tools
+install_terminal_tools(){
+    info "Installing terminal tools"
+    # install oh-my-zsh
+    install_oh_my_zsh
+    # install and link starship
+    install_starship
+    link_starship_config
+}
+
 # creates a file link
 link_file(){
     info "Linking $2"
-    ln -sfT $1 $2
+    ln -sf $1 $2
     success "$2 linked"
 }
 
@@ -134,6 +194,7 @@ grab_powerline_fonts(){
     success "Powerline fonts installed"
 }
 
+# TODO - find a common way to grab fonts on all platforms
 # grab nerd fonts
 grab_nerd_fonts(){
     info "Grabbing Nerd Fonts"
@@ -163,6 +224,34 @@ grab_nerd_fonts(){
     success "Nerd Fonts installed"
 }
 
+# TODO - find a common way to grab fonts on all platforms
+# grab nerd fonts on macOS (curl)
+grab_nerd_fonts_on_macOS(){
+    info "Grabbing Nerd Fonts"
+    info "https://github.com/ryanoasis/nerd-fonts"
+
+    # nerd fonts
+    info "creating tempNerdFonts directory"
+    cd ~ && verify_directory ~/tempNerdFonts
+    info "move to tempNerdFonts directory"
+    cd ~/tempNerdFonts
+    info "downloading Nerd Fonts"
+    curl -LO https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/Meslo.zip
+    curl -LO https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/FiraCode.zip
+    curl -LO https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/RobotoMono.zip
+    info "unzipping Nerd Fonts"
+    unzip Meslo.zip -d Meslo
+    unzip FiraCode.zip -d FiraCode
+    unzip RobotoMono.zip -d RobotoMono
+    info "installing Nerd Fonts"
+    cp Meslo/*.ttf ~/Library/Fonts/
+    cp FiraCode/*.ttf ~/Library/Fonts/
+    cp RobotoMono/*.ttf ~/Library/Fonts/
+    info "removing tempNerdFonts directory"
+    cd $working_dir && rm -rf ~/tempNerdFonts
+    success "Nerd Fonts installed"
+}
+
 install_oh_my_zsh(){
     # oh-my-zsh & plugins
     info "Installing oh-my-zsh"
@@ -179,8 +268,9 @@ install_oh_my_zsh(){
             return
         fi
     fi
-
-    wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
+    # TODO - verify oh-my-zsh installation includes oh-my-zsh.sh file
+    #wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
+    wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O - | zsh || true
     success "oh-my-zsh installed"
 
     info "Installing zsh-autosuggestions & zsh-syntax-highlighting"
@@ -202,21 +292,78 @@ install_oh_my_zsh(){
     success "zsh-autosuggestions & zsh-syntax-highlighting installed"
 }
 
-
 # cronksp - starship is a cross-shell prompt, cooler than oh-my-zsh
 # installs Starship prompt
+#install_starship() {
+    #info "Installing Starship prompt"
+    #curl --cacert /etc/ssl/certs/ca-certificates.crt -sSL
+    #if curl --cacert /etc/ssl/certs/ca-certificates.crt -fsSL https://starship.rs/install.sh | sh -s -- -y; then
+        #success "Starship prompt installed"
+        # Verify Starship version
+        #starship_version=$(starship --version)
+        #info "Starship version: $starship_version"
+    #else
+        #error "Failed to install Starship prompt"
+    #fi
+#}
+
+# TODO - ensure this works
 install_starship() {
     info "Installing Starship prompt"
-    #curl --cacert /etc/ssl/certs/ca-certificates.crt -sSL
-    if curl --cacert /etc/ssl/certs/ca-certificates.crt -fsSL https://starship.rs/install.sh | sh -s -- -y; then
-        success "Starship prompt installed"
-        # Verify Starship version
+
+    case "$os_type" in
+        "Darwin")
+            # macOS
+            if command -v brew &> /dev/null; then
+                brew install starship
+            else
+                error "Homebrew not found. Please install Homebrew first."
+                return 1
+            fi
+            ;;
+        "Linux")
+            # Linux
+            if command -v apt &> /dev/null; then
+                # Debian/Ubuntu
+                sudo apt update -q && sudo apt install -y starship
+            elif command -v dnf &> /dev/null; then
+                # Fedora
+                sudo dnf install -y starship
+            elif command -v pacman &> /dev/null; then
+                # Arch Linux
+                sudo pacman -S --noconfirm starship
+            else
+                # Fallback to curl if no package manager is detected
+                curl -fsSL https://starship.rs/install.sh | sh -s -- -y
+            fi
+            ;;
+        "MINGW"*|"CYGWIN"*|"MSYS"*)
+            # Windows (via Scoop or Chocolatey)
+            if command -v scoop &> /dev/null; then
+                scoop install starship
+            elif command -v choco &> /dev/null; then
+                choco install starship
+            else
+                error "No supported package manager found on Windows. Please install Scoop or Chocolatey."
+                return 1
+            fi
+            ;;
+        *)
+            # Unsupported OS
+            error "Unsupported OS. Please install Starship manually from https://starship.rs."
+            return 1
+            ;;
+    esac
+
+    # Verify installation
+    if command -v starship &> /dev/null; then
         starship_version=$(starship --version)
-        info "Starship version: $starship_version"
+        success "Starship prompt installed successfully (version: $starship_version)"
     else
-        error "Failed to install Starship prompt"
+        error "Failed to install Starship prompt."
     fi
 }
+
 # creates a symlink for starship.toml
 link_starship_config() {
     info "Linking starship.toml"
@@ -228,7 +375,7 @@ link_starship_config() {
     verify_directory "$STARSHIP_CONFIG_DIR"
 
     # Remove any existing symlink or file at the target location
-    if [ -L "$STARSHIP_CONFIG_FILE" ] || [ -e "$STARSHIP_CONFIG_FILE"]; then
+    if [ -L "$STARSHIP_CONFIG_FILE" ] || [ -e "$STARSHIP_CONFIG_FILE" ]; then
         rm -f "$STARSHIP_CONFIG_FILE"
     fi
 
@@ -240,23 +387,24 @@ link_starship_config() {
 verify_runtime
 
 #install fonts
-grab_powerline_fonts
-grab_nerd_fonts
+#grab_powerline_fonts
+#grab_nerd_fonts
 
 # oh-my-zsh & plugins
-install_oh_my_zsh
+#install_oh_my_zsh
 
 # starship prompt
-install_starship
+#install_starship
 
 # link starship.toml
-link_starship_config
+#link_starship_config
 
 #files=("$HOME/.zshrc" "$HOME/.gitconfig" "$HOME/.gitignore" "$HOME/.editorconfig" "$HOME/.editorconfig" "$HOME/.npmrc" "$HOME/.zshenv")
 files=("$HOME/.zshrc" "$HOME/.zshenv" "$HOME/.zprofile")
 
 for f in "${files[@]}"
 do
+    info "Backing up $f"
     backup_file $f
     #BUG - this is not working as expected, only the first in the list is backed up
 done
