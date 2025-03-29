@@ -407,6 +407,10 @@ verify_runtime
 # link starship.toml
 #link_starship_config
 
+#Set git config explicitly
+git config --global user.name "Shane Cronk"
+git config --global user.email "Shane.Cronk7@gmail.com"
+
 #files=("$HOME/.zshrc" "$HOME/.gitconfig" "$HOME/.gitignore" "$HOME/.editorconfig" "$HOME/.editorconfig" "$HOME/.npmrc" "$HOME/.zshenv")
 files=("$HOME/.zshrc" "$HOME/.zshenv" "$HOME/.zprofile")
 
