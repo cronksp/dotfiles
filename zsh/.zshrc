@@ -128,7 +128,8 @@ if ! [[ -x "$(command -v node)" ]]; then
         # Export virtualenvwrapper commands
         # Uncomment the below lines to use virtualenvwrapper on MacOS
         # export VIRTUALENVWRAPPER_PYTHON=/Library/Frameworks/Python.framework/Versions/3.11/bin/python3
-        export VIRTUALENVWRAPPER_PYTHON=$(command -v python3)
+        #export VIRTUALENVWRAPPER_PYTHON=$(command -v python3)
+        export VIRTUALENVWRAPPER_PYTHON=$(/usr/bin/env python3 -c "import sys; print(sys.executable)")
         export WORKON_HOME=$HOME/.virtualenvs
         export PROJECT_HOME=$HOME/Documents/dev
        if [ -f "$(command -v virtualenvwrapper.sh)" ]; then
