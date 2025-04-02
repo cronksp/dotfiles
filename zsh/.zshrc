@@ -131,10 +131,10 @@ if ! [[ -x "$(command -v node)" ]]; then
         export VIRTUALENVWRAPPER_PYTHON=$(command -v python3)
         export WORKON_HOME=$HOME/.virtualenvs
         export PROJECT_HOME=$HOME/Documents/dev
-        if [ -f /usr/local/bin/virtualenvwrapper.sh ]; then
-            source /usr/local/bin/virtualenvwrapper.sh
+       if [ -f "$(command -v virtualenvwrapper.sh)" ]; then
+            source "$(command -v virtualenvwrapper.sh)"
         else
-            #echo "Warning: virtualenvwrapper.sh not found at /usr/local/bin/virtualenvwrapper.sh"
+            echo "Warning: virtualenvwrapper.sh not found. Please ensure virtualenvwrapper is installed."
         fi
     else
         echo "Warning: Python3 is not installed. Skipping virtualenvwrapper setup."
