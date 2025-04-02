@@ -217,6 +217,13 @@ grab_nerd_fonts(){
     cp Meslo/*.ttf ~/.local/share/fonts/
     cp FiraCode/*.ttf ~/.local/share/fonts/
     cp RobotoMono/*.ttf ~/.local/share/fonts/
+    # Check if fc-cache is installed
+    if ! command -v fc-cache &> /dev/null; then
+        echo "fc-cache not found. Installing fontconfig..."
+        apt-get update && apt-get install -y fontconfig
+    else
+        echo "fc-cache is already installed. Skipping installation."
+    fi
     info "updating font cache"
     fc-cache -fv
     info "removing tempNerdFonts directory"
@@ -261,7 +268,7 @@ install_oh_my_zsh(){
         info ".oh-my-zsh directory already exists"
         #read -p "Do you want to remove the existing .oh-my-zsh directory? (y/n): " choice
         # Default to 'y' to allow for non-interactive installs
-        choice="y"
+        
         if [ "$choice" = "y" ]; then
             rm -rf "$HOME/.oh-my-zsh"
             info "Removed existing .oh-my-zsh directory"
