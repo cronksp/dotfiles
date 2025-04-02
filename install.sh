@@ -268,7 +268,7 @@ install_oh_my_zsh(){
         info ".oh-my-zsh directory already exists"
         #read -p "Do you want to remove the existing .oh-my-zsh directory? (y/n): " choice
         # Default to 'y' to allow for non-interactive installs
-        
+        choice="y"
         if [ "$choice" = "y" ]; then
             rm -rf "$HOME/.oh-my-zsh"
             info "Removed existing .oh-my-zsh directory"
