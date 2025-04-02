@@ -131,7 +131,15 @@ if ! [[ -x "$(command -v node)" ]]; then
         #export VIRTUALENVWRAPPER_PYTHON=$(command -v python3)
         export VIRTUALENVWRAPPER_PYTHON=$(/usr/bin/env python3 -c "import sys; print(sys.executable)")
         export WORKON_HOME=$HOME/.virtualenvs
-        export PROJECT_HOME=$HOME/Documents/dev
+        #export PROJECT_HOME=$HOME/Documents/dev
+        # Dynamically set PROJECT_HOME based on the environment
+        if [ -n "$CODESPACES" ] || [ -n "$DEVCONTAINER" ]; then
+            # Inside a VS Code devcontainer
+            export PROJECT_HOME=/workspaces
+        else
+            # On macOS or other local environments
+            export PROJECT_HOME=$HOME/Documents/dev
+        fi
        if [ -f "$(command -v virtualenvwrapper.sh)" ]; then
             source "$(command -v virtualenvwrapper.sh)"
         else
