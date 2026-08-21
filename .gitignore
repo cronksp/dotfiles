@@ -1,2 +1,4 @@
-zsh/.zcompdump-Shane’s MacBook Pro-5.9
+.DS_Store
+.vscode/
+zsh/.zcompdump*
 zsh/.zsh_history

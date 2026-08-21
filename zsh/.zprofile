@@ -1,10 +1,14 @@
+# -------------------------------------------------------------------
+# ~/.zprofile
+# Executed for login shells
+# -------------------------------------------------------------------
 
-# Setting PATH for Python 3.11
-# The original version is saved in .zprofile.pysave
-#PATH="/Library/Frameworks/Python.framework/Versions/3.11/bin:${PATH}"
-#export PATH
+# Initialize Homebrew
+if [ -x "/opt/homebrew/bin/brew" ]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [ -x "/usr/local/bin/brew" ]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+fi
 
-#ZDOTDIR=~/Documents/dev/repos/dotfiles/zsh
-ZDOTDIR=~/
-
-eval "$(/opt/homebrew/bin/brew shellenv)"
+# Added by Antigravity CLI installer
+export PATH="/Users/shanecronk/.local/bin:$PATH"
