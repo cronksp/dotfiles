@@ -1,0 +1,22 @@
+# -------------------------------------------------------------------
+# ~/.zshrc.local (Example Template)
+# Copy this file to ~/.zshrc.local on your machine for private/custom overrides.
+# This file is strictly ignored by Git.
+# -------------------------------------------------------------------
+
+# --- Work Environment & Proxies ---
+# export HTTP_PROXY="http://proxy.internal.company.com:8080"
+# export HTTPS_PROXY="http://proxy.internal.company.com:8080"
+
+# --- Private Package Registries / Tokens ---
+# export ARTIFACTORY_TOKEN="your-artifactory-token"
+# export NPM_TOKEN="your-npm-token"
+
+# --- AI API Keys (Personal or Work Gateways) ---
+# export ANTHROPIC_API_KEY="sk-ant-..."
+# export OPENAI_API_KEY="sk-..."
+# export GEMINI_API_KEY="..."
+# export AZURE_OPENAI_ENDPOINT="https://corp-ai.openai.azure.com"
+
+# --- Custom Machine Aliases ---
+# alias k8s-prod="kubectl --context=prod-cluster"

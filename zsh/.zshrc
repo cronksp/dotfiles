@@ -23,26 +23,20 @@ setopt hist_ignore_space
 setopt autocd              # Allow changing directories without `cd`
 setopt interactivecomments # Allow comments in interactive shell
 
-# --- Aliases ---
-# Config/Reload
+# --- Core Navigation & Standard Aliases ---
 alias zshrcconfig='code ~/.zshrc'
 alias loadz='source ~/.zshrc'
 alias loadb='source ~/.bashrc'
 
-# Navigation
 alias dev='cd ~/Documents/dev'
 alias dotfiles='cd ~/Documents/dev/repos/dotfiles'
 alias wrk='cd /workspaces'
 
-# Tools
-alias ls='ls -G'
 alias update='sudo apt-get update && sudo apt-get upgrade'
 
-# Python
+# Python & Virtualenvwrapper
 alias python='python3'
 alias pip='pip3'
-
-# Virtualenvwrapper
 alias mkv='mkvirtualenv'
 alias lsv='lsvirtualenv'
 alias lsvb='lsvirtualenv -b'
@@ -50,6 +44,47 @@ alias rmv='rmvirtualenv'
 alias cpv='cpvirtualenv'
 alias dve='deactivate'
 alias wkv='workon'
+
+# --- Modern CLI Tool Replacements & Aliases ---
+
+# eza (Modern ls replacement with icons & git status)
+if command -v eza &> /dev/null; then
+    alias ls='eza --icons'
+    alias ll='eza -l --icons --git'
+    alias la='eza -la --icons --git'
+    alias lt='eza --tree --level=2 --icons'
+else
+    alias ls='ls -G'
+fi
+
+# bat (Syntax-highlighted cat)
+if command -v bat &> /dev/null; then
+    alias cat='bat --paging=never'
+elif command -v batcat &> /dev/null; then
+    alias cat='batcat --paging=never'
+    alias bat='batcat'
+fi
+
+# zoxide (Smarter cd)
+if command -v zoxide &> /dev/null; then
+    eval "$(zoxide init zsh)"
+fi
+
+# fzf (Fuzzy Finder integration)
+if command -v fzf &> /dev/null; then
+    source <(fzf --zsh 2>/dev/null) || true
+fi
+
+# --- AI Workspace Bridge ---
+export AI_HOME="${AI_HOME:-$HOME/Documents/dev/repos/ai}"
+if [ -d "$AI_HOME" ]; then
+    alias ai-repo='cd "$AI_HOME"'
+    alias skills='cd "$AI_HOME/skills"'
+    alias prompts='cd "$AI_HOME/prompts"'
+    if [ -d "$AI_HOME/bin" ]; then
+        export PATH="$AI_HOME/bin:$PATH"
+    fi
+fi
 
 # --- Paths & Tools Integration ---
 
@@ -63,8 +98,8 @@ export PATH="$PATH:/Users/shanecronk/.lmstudio/bin"
 
 # NVM (Node Version Manager)
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 
 # Angular CLI autocompletion
 if command -v ng &> /dev/null; then
@@ -90,9 +125,14 @@ if ! [[ -x "$(command -v node)" ]]; then
 fi
 
 # --- Starship Prompt ---
-# Must be initialized at the end
+# Must be initialized at the end of shell setup
 export STARSHIP_CONFIG=~/.config/starship/starship.toml
 if command -v starship &> /dev/null; then
     eval "$(starship init zsh)"
 fi
-export AI_WORKFLOW_HOME="/Users/shanecronk/Documents/dev/repos/ai"
+
+# --- Machine-Specific / Local Overrides (Ignored by Git) ---
+# Use ~/.zshrc.local for corporate tokens, Artifactory tokens, work proxies, or personal API keys
+if [ -f "$HOME/.zshrc.local" ]; then
+    source "$HOME/.zshrc.local"
+fi

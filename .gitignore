@@ -2,3 +2,10 @@
 .vscode/
 zsh/.zcompdump*
 zsh/.zsh_history
+
+# Local override files (exclude examples)
+*.local
+*.local.sh
+*.local.json
+.env.local
+!*.example

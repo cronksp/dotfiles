@@ -6,7 +6,7 @@ set -e
 
 # Capture absolute path of the dotfiles directory
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DEPENDENCIES=(curl zsh git unzip wget)
+DEPENDENCIES=(curl zsh git unzip wget fzf)
 OS_TYPE=$(uname)
 
 # Helpers for output
@@ -26,7 +26,7 @@ error(){
 # Change default shell to ZSH
 change_shell() {
     info "Changing Shell to ZSH"
-    if [ "$SHELL" != "$(which zsh)" ]; then
+    if [ "$SHELL" != "$(which zsh 2>/dev/null)" ]; then
         if chsh -s "$(which zsh)" 2>/dev/null; then
             success "Shell set to ZSH"
         else
@@ -130,7 +130,7 @@ install_fonts() {
 
     if [ "$OS_TYPE" = "Linux" ]; then
         if ! command -v fc-cache &> /dev/null; then
-            sudo apt-get install -y fontconfig > /dev/null
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y fontconfig > /dev/null
         fi
         fc-cache -fv > /dev/null
     fi
@@ -161,6 +161,29 @@ link_starship_config() {
     link_file "$DOTFILES_DIR/starship/.config/starship.toml" "$STARSHIP_CONFIG_FILE"
 }
 
+# Creates a symlink for ghostty/config if Ghostty config directory exists or on macOS
+link_ghostty_config() {
+    if [ "$OS_TYPE" = "Darwin" ] || [ -d "$HOME/.config/ghostty" ]; then
+        local GHOSTTY_CONFIG_DIR="$HOME/.config/ghostty"
+        local GHOSTTY_CONFIG_FILE="$GHOSTTY_CONFIG_DIR/config"
+        verify_directory "$GHOSTTY_CONFIG_DIR"
+        backup_file "$GHOSTTY_CONFIG_FILE"
+        link_file "$DOTFILES_DIR/ghostty/config" "$GHOSTTY_CONFIG_FILE"
+    fi
+}
+
+# Optional AI Workspace Bridge Linking
+link_ai_rules() {
+    local AI_REPO="${AI_HOME:-$HOME/Documents/dev/repos/ai}"
+    if [ -d "$AI_REPO" ]; then
+        info "AI workspace repository detected at $AI_REPO"
+        if [ -f "$AI_REPO/rules.md" ]; then
+            link_file "$AI_REPO/rules.md" "$HOME/.cursorrules"
+            link_file "$AI_REPO/rules.md" "$HOME/.windsurfrules"
+        fi
+    fi
+}
+
 # Verify runtime environment and dependencies
 case "$OS_TYPE" in 
     "Darwin")
@@ -181,6 +204,8 @@ esac
 install_fonts
 install_starship
 link_starship_config
+link_ghostty_config
+link_ai_rules
 
 # Link Dotfiles
 info "Linking dotfiles"
