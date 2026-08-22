@@ -95,3 +95,4 @@ export STARSHIP_CONFIG=~/.config/starship/starship.toml
 if command -v starship &> /dev/null; then
     eval "$(starship init zsh)"
 fi
+export AI_WORKFLOW_HOME="/Users/shanecronk/Documents/dev/repos/ai"
