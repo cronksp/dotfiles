@@ -124,7 +124,7 @@ install_fonts() {
         info "Downloading $font..."
         wget -q "https://github.com/ryanoasis/nerd-fonts/releases/download/${NERD_FONT_VERSION}/${font}.zip"
         unzip -q "${font}.zip" -d "$font"
-        cp "$font"/*.ttf "$FONT_DIR/"
+        find "$font" -type f \( -name "*.ttf" -o -name "*.otf" \) -exec cp {} "$FONT_DIR/" \;
         success "$font installed"
     done
 
@@ -132,7 +132,7 @@ install_fonts() {
     info "Downloading Monaspace..."
     wget -q "https://github.com/githubnext/monaspace/releases/download/v1.101/monaspace-v1.101.zip"
     unzip -q "monaspace-v1.101.zip"
-    cp monaspace-v1.101/fonts/otf/*.otf "$FONT_DIR/"
+    find monaspace-v1.101 -type f \( -name "*.otf" -o -name "*.ttf" \) -exec cp {} "$FONT_DIR/" \;
     success "Monaspace installed"
 
     if [ "$OS_TYPE" = "Linux" ]; then
