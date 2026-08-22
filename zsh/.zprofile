@@ -10,5 +10,5 @@ elif [ -x "/usr/local/bin/brew" ]; then
     eval "$(/usr/local/bin/brew shellenv)"
 fi
 
-# Added by Antigravity CLI installer
-export PATH="/Users/shanecronk/.local/bin:$PATH"
+# User local bin
+[ -d "$HOME/.local/bin" ] && export PATH="$HOME/.local/bin:$PATH"

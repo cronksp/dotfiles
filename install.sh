@@ -1,13 +1,13 @@
 #!/bin/bash
 # Dotfiles installation script
 
-# Exit immediately if a command exits with a non-zero status.
-set -e
+# Exit immediately if a command exits with a non-zero status, unset variables are errors, and fail on pipe errors.
+set -euo pipefail
 
 # Capture absolute path of the dotfiles directory
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEPENDENCIES=(curl zsh git unzip wget fzf)
-OS_TYPE=$(uname)
+OS_TYPE="$(uname)"
 
 # Helpers for output
 info() {
@@ -26,11 +26,15 @@ error(){
 # Change default shell to ZSH
 change_shell() {
     info "Changing Shell to ZSH"
-    if [ "$SHELL" != "$(which zsh 2>/dev/null)" ]; then
-        if chsh -s "$(which zsh)" 2>/dev/null; then
+    local CURRENT_SHELL="${SHELL:-}"
+    local ZSH_PATH
+    ZSH_PATH="$(which zsh 2>/dev/null || true)"
+
+    if [ -n "$ZSH_PATH" ] && [ "$CURRENT_SHELL" != "$ZSH_PATH" ]; then
+        if chsh -s "$ZSH_PATH" 2>/dev/null; then
             success "Shell set to ZSH"
         else
-            info "Note: Could not automatically change default shell. You can set it manually with: chsh -s $(which zsh)"
+            info "Note: Could not automatically change default shell. You can set it manually with: chsh -s $ZSH_PATH"
         fi
     else
         success "Shell is already ZSH"
@@ -107,7 +111,10 @@ install_fonts() {
         verify_directory "$FONT_DIR"
     fi
 
-    local TEMP_DIR=$(mktemp -d)
+    local TEMP_DIR
+    TEMP_DIR=$(mktemp -d)
+    trap 'rm -rf "${TEMP_DIR:-}"' EXIT
+
     cd "$TEMP_DIR" || error "Failed to cd into temp directory"
 
     local NERD_FONT_VERSION="v3.2.1"
@@ -117,7 +124,7 @@ install_fonts() {
         info "Downloading $font..."
         wget -q "https://github.com/ryanoasis/nerd-fonts/releases/download/${NERD_FONT_VERSION}/${font}.zip"
         unzip -q "${font}.zip" -d "$font"
-        cp "$font"/*.ttf "$FONT_DIR/" || true
+        cp "$font"/*.ttf "$FONT_DIR/"
         success "$font installed"
     done
 
@@ -125,7 +132,7 @@ install_fonts() {
     info "Downloading Monaspace..."
     wget -q "https://github.com/githubnext/monaspace/releases/download/v1.101/monaspace-v1.101.zip"
     unzip -q "monaspace-v1.101.zip"
-    cp monaspace-v1.101/fonts/otf/*.otf "$FONT_DIR/" || true
+    cp monaspace-v1.101/fonts/otf/*.otf "$FONT_DIR/"
     success "Monaspace installed"
 
     if [ "$OS_TYPE" = "Linux" ]; then
@@ -137,6 +144,7 @@ install_fonts() {
 
     cd "$DOTFILES_DIR"
     rm -rf "$TEMP_DIR"
+    trap - EXIT
     success "All fonts installed"
 }
 
@@ -144,7 +152,7 @@ install_fonts() {
 install_starship() {
     info "Installing Starship prompt"
     if ! command -v starship &> /dev/null; then
-        curl -sS https://starship.rs/install.sh | sh -s -- -y > /dev/null
+        curl -fsSL https://starship.rs/install.sh | sh -s -- -y > /dev/null
         success "Starship prompt installed"
     else
         success "Starship prompt is already installed"
@@ -178,7 +186,9 @@ link_ai_rules() {
     if [ -d "$AI_REPO" ]; then
         info "AI workspace repository detected at $AI_REPO"
         if [ -f "$AI_REPO/rules.md" ]; then
+            backup_file "$HOME/.cursorrules"
             link_file "$AI_REPO/rules.md" "$HOME/.cursorrules"
+            backup_file "$HOME/.windsurfrules"
             link_file "$AI_REPO/rules.md" "$HOME/.windsurfrules"
         fi
     fi

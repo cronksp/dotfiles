@@ -53,8 +53,10 @@ if command -v eza &> /dev/null; then
     alias ll='eza -l --icons --git'
     alias la='eza -la --icons --git'
     alias lt='eza --tree --level=2 --icons'
-else
+elif [[ "$OSTYPE" == darwin* ]]; then
     alias ls='ls -G'
+else
+    alias ls='ls --color=auto'
 fi
 
 # bat (Syntax-highlighted cat)
@@ -89,12 +91,12 @@ fi
 # --- Paths & Tools Integration ---
 
 # Antigravity CLI & IDE
-export PATH="/Users/shanecronk/.local/bin:$PATH"
-export PATH="/Users/shanecronk/.antigravity/antigravity/bin:$PATH"
-export PATH="/Users/shanecronk/.antigravity-ide/antigravity-ide/bin:$PATH"
+[ -d "$HOME/.local/bin" ] && export PATH="$HOME/.local/bin:$PATH"
+[ -d "$HOME/.antigravity/antigravity/bin" ] && export PATH="$HOME/.antigravity/antigravity/bin:$PATH"
+[ -d "$HOME/.antigravity-ide/antigravity-ide/bin" ] && export PATH="$HOME/.antigravity-ide/antigravity-ide/bin:$PATH"
 
 # LM Studio CLI (lms)
-export PATH="$PATH:/Users/shanecronk/.lmstudio/bin"
+[ -d "$HOME/.lmstudio/bin" ] && export PATH="$PATH:$HOME/.lmstudio/bin"
 
 # NVM (Node Version Manager)
 export NVM_DIR="$HOME/.nvm"
@@ -107,20 +109,18 @@ if command -v ng &> /dev/null; then
 fi
 
 # Virtualenvwrapper setup
-if ! [[ -x "$(command -v node)" ]]; then
-    if command -v python3 &> /dev/null; then
-        export VIRTUALENVWRAPPER_PYTHON=$(/usr/bin/env python3 -c "import sys; print(sys.executable)" 2>/dev/null || command -v python3)
-        export WORKON_HOME=$HOME/.virtualenvs
-        if [ -n "$CODESPACES" ] || [ -n "$DEVCONTAINER" ]; then
-            export PROJECT_HOME=/workspaces
-        else
-            export PROJECT_HOME=$HOME/Documents/dev
-        fi
-        if command -v virtualenvwrapper.sh &>/dev/null; then
-            source "$(command -v virtualenvwrapper.sh)"
-        elif [ -f /usr/local/bin/virtualenvwrapper.sh ]; then
-            source /usr/local/bin/virtualenvwrapper.sh
-        fi
+if command -v python3 &> /dev/null; then
+    export VIRTUALENVWRAPPER_PYTHON=$(/usr/bin/env python3 -c "import sys; print(sys.executable)" 2>/dev/null || command -v python3)
+    export WORKON_HOME=$HOME/.virtualenvs
+    if [ -n "$CODESPACES" ] || [ -n "$DEVCONTAINER" ]; then
+        export PROJECT_HOME=/workspaces
+    else
+        export PROJECT_HOME=$HOME/Documents/dev
+    fi
+    if command -v virtualenvwrapper.sh &>/dev/null; then
+        source "$(command -v virtualenvwrapper.sh)"
+    elif [ -f /usr/local/bin/virtualenvwrapper.sh ]; then
+        source /usr/local/bin/virtualenvwrapper.sh
     fi
 fi
 
