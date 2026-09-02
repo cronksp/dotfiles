@@ -1,0 +1,14 @@
+# -------------------------------------------------------------------
+# ~/.bashrc.local (Example Template)
+# Copy this file to ~/.bashrc.local on your machine for private/custom overrides.
+# This file is strictly ignored by Git.
+# -------------------------------------------------------------------
+
+# --- Private Tokens & API Keys ---
+# export ANTHROPIC_API_KEY="sk-ant-..."
+# export OPENAI_API_KEY="sk-..."
+# export GEMINI_API_KEY="..."
+
+# --- Work Environment & Proxies ---
+# export HTTP_PROXY="http://proxy.internal.company.com:8080"
+# export HTTPS_PROXY="http://proxy.internal.company.com:8080"

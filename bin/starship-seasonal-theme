@@ -1,0 +1,185 @@
+#!/usr/bin/env bash
+# Select a named Starship palette by season/holiday, or keep a manual override.
+set -euo pipefail
+
+# Resolve script directory and repo root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Locate starship template
+if [[ -n "${STARSHIP_TEMPLATE:-}" && -r "$STARSHIP_TEMPLATE" ]]; then
+  template_path="$STARSHIP_TEMPLATE"
+elif [[ -r "$REPO_DIR/starship/starship.toml" ]]; then
+  template_path="$REPO_DIR/starship/starship.toml"
+elif [[ -r "$REPO_DIR/starship/.config/starship.toml" ]]; then
+  template_path="$REPO_DIR/starship/.config/starship.toml"
+elif [[ -r "$HOME/.config/starship/starship.template.toml" ]]; then
+  template_path="$HOME/.config/starship/starship.template.toml"
+elif [[ -r "$HOME/dev/repos/dotfiles/starship/starship.toml" ]]; then
+  template_path="$HOME/dev/repos/dotfiles/starship/starship.toml"
+else
+  template_path="$HOME/dev/repos/dotfiles/starship/.config/starship.toml"
+fi
+
+state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/starship"
+active_path="$state_dir/starship.toml"
+override_path="$state_dir/season-override"
+
+season_for_month() {
+  case "$(date +%-m)" in
+    12|1|2) printf '%s\n' winter ;;
+    3|4|5) printf '%s\n' spring ;;
+    6|7|8) printf '%s\n' summer ;;
+    9|11) printf '%s\n' autumn ;;
+    10) printf '%s\n' halloween ;;
+  esac
+}
+
+holiday_for_today() {
+  local month_day year day first_weekday thanksgiving_day
+  month_day="$(date +%m%d)"
+
+  case "$month_day" in
+    1220|1221|1222|1223|1224|1225|1226|1227|1228) printf '%s\n' christmas; return 0 ;;
+    1229|1230|1231|0101) printf '%s\n' new_year; return 0 ;;
+    0314|0315|0316|0317) printf '%s\n' st_patricks; return 0 ;;
+    0701|0702|0703|0704) printf '%s\n' fourth_of_july; return 0 ;;
+  esac
+
+  # U.S. Thanksgiving: the fourth Thursday in November, plus three lead-in days.
+  [[ "$(date +%-m)" == 11 ]] || return 1
+  year="$(date +%Y)"
+  day="$(date +%-d)"
+  first_weekday="$(date -d "$year-11-01" +%u)"
+  thanksgiving_day=$((1 + (4 - first_weekday + 7) % 7 + 21))
+  if (( day >= thanksgiving_day - 3 && day <= thanksgiving_day )); then
+    printf '%s\n' thanksgiving
+    return 0
+  fi
+  return 1
+}
+
+valid_season() {
+  case "$1" in
+    spring|summer|autumn|halloween|winter|christmas|st_patricks|fourth_of_july|thanksgiving|new_year) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+icons_for_season() {
+  case "$1" in
+    spring) printf '%s\n' '🌱 🌸 🐣' ;;
+    summer) printf '%s\n' '☀️ 🌊 🍉' ;;
+    autumn) printf '%s\n' '🍂 🍁 🌽' ;;
+    halloween) printf '%s\n' '🎃 👻 💀' ;;
+    winter) printf '%s\n' '❄️ ⛄ 🏔️' ;;
+    christmas) printf '%s\n' '🎄 🎅 🎁' ;;
+    st_patricks) printf '%s\n' '🍀 🌈 🪙' ;;
+    fourth_of_july) printf '%s\n' '🇺🇸 🎆 🗽' ;;
+    thanksgiving) printf '%s\n' '🦃 🥧 🍂' ;;
+    new_year) printf '%s\n' '🎆 🥂 ✨' ;;
+  esac
+}
+
+active_season() {
+  if [[ -n "${STARSHIP_SEASON:-}" ]]; then
+    printf '%s\n' "$STARSHIP_SEASON"
+  elif [[ -r "$override_path" ]]; then
+    cat "$override_path"
+  elif holiday="$(holiday_for_today)"; then
+    printf '%s\n' "$holiday"
+  else
+    season_for_month
+  fi
+}
+
+set_override() {
+  local requested="$1"
+  if [[ "$requested" == auto ]]; then
+    rm -f "$override_path"
+  elif valid_season "$requested"; then
+    printf '%s\n' "$requested" > "$override_path"
+  else
+    echo "unknown season/theme: $requested" >&2
+    exit 2
+  fi
+}
+
+usage() {
+  printf '%s\n' \
+    'Starship seasonal theme selector' \
+    '' \
+    'Usage:' \
+    '  set-theme' \
+    '  set-theme current' \
+    '  set-theme <theme>' \
+    '  set-theme set <theme>' \
+    '  set-theme auto' \
+    '' \
+    'Themes:' \
+    '  spring, summer, autumn, halloween, winter, christmas' \
+    '  st_patricks, fourth_of_july, thanksgiving, new_year' \
+    '' \
+    'Automatic schedule:' \
+    '  Winter Dec-Feb · Spring Mar-May · Summer Jun-Aug · Autumn Sep/Nov · Halloween Oct' \
+    "  Christmas Dec 20-28 · New Year Dec 29-Jan 1 · St. Patrick's Day Mar 14-17 · 4th of July Jul 1-4" \
+    '  Thanksgiving: Monday through the fourth Thursday of November' \
+    '' \
+    'A manually selected theme persists until you run: set-theme auto'
+}
+
+mkdir -p "$state_dir"
+announce=false
+
+case "${1:---ensure}" in
+  --set|set)
+    [[ $# -eq 2 ]] || { usage; exit 2; }
+    set_override "$2"
+    announce=true
+    ;;
+  auto)
+    [[ $# -eq 1 ]] || { usage; exit 2; }
+    set_override auto
+    announce=true
+    ;;
+  --print|current)
+    [[ $# -eq 1 ]] || { usage; exit 2; }
+    season="$(active_season)"
+    valid_season "$season" || { echo "invalid season: $season" >&2; exit 2; }
+    printf '%s\n' "$season"
+    exit 0
+    ;;
+  help|--help|-h)
+    usage
+    exit 0
+    ;;
+  spring|summer|autumn|halloween|winter|christmas|st_patricks|fourth_of_july|thanksgiving|new_year)
+    [[ $# -eq 1 ]] || { usage; exit 2; }
+    set_override "$1"
+    announce=true
+    ;;
+  --ensure) ;;
+  *)
+    usage
+    exit 2
+    ;;
+esac
+
+season="$(active_season)"
+
+valid_season "$season" || { echo "invalid season: $season" >&2; exit 2; }
+[[ -r "$template_path" ]] || { echo "missing template: $template_path" >&2; exit 1; }
+icons="$(icons_for_season "$season")"
+
+temporary_path="$(mktemp "$state_dir/starship.toml.XXXXXX")"
+trap 'rm -f "$temporary_path"' EXIT
+sed \
+  -e "s/^palette = '.*' # __SEASON__$/palette = '$season' # __SEASON__/" \
+  -e "s/__SEASON_ICONS__/$icons/" \
+  "$template_path" > "$temporary_path"
+mv -f "$temporary_path" "$active_path"
+trap - EXIT
+
+if [[ "$announce" == true ]]; then
+  printf 'Active Starship theme set to: %s\n' "$season"
+fi
