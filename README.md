@@ -12,18 +12,18 @@ The terminal prompt is structured into color-coordinated powerline bubbles with 
 
 ```text
  [OS_SYMBOL • SEASONAL_ICONS] [USER]  [DIRECTORY]  [BRANCH] [STATUS]  [LANGUAGES]  [DURATION]  [TIME] 
-❯ 
+❯
 ```
 
 ### Live Examples:
 ```text
  🏹 • 🍂 🍁 🌽  spc  ~/💻 dev/📦 repos/dotfiles  🌿 main 📝 2  🦀 1.78.0   00:25 
-❯ 
+❯
 ```
 *(When a command takes >2s to run, a subtle execution bubble automatically appears before the clock)*:
 ```text
  🏹 • 🍂 🍁 🌽  spc  ~/💻 dev/📦 repos/dotfiles  🌿 main  ⏱️ 4.2s   00:25 
-❯ 
+❯
 ```
 
 ---
