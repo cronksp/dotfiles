@@ -111,7 +111,7 @@ The OS icon is dynamically detected and rendered cleanly with high-contrast, rec
 | **Rust** | 🦀 | Ferris the Rust Crab |
 | **Go** | 🐹 | Go Gopher |
 | **Python** | 🐍 | Python Snake & Virtualenv shield (`🛡️`) |
-| **Node.js** | ⬢ | Node Green Hexagon |
+| **Node.js** |  | Node.js Nerd Font icon |
 | **Ruby** | 💎 | Ruby Gem |
 | **PHP** | 🐘 | elePHPant Mascot |
 | **Java** | ☕ | Coffee Cup |
