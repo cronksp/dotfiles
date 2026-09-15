@@ -8,7 +8,7 @@ set -e
 
 # capture working directory
 working_dir=$(pwd)
-dependencies=(curl zsh git unzip)
+dependencies=(curl zsh git unzip wget)
 os_type=$(uname)
 
 
@@ -69,13 +69,33 @@ verify_mac_dependencies(){
 # TODO - review this function
 # verifies that dependencies are installed on Linux
 verify_linux_dependencies(){
-    sudo apt update -q > /dev/null
-    for lib in "${dependencies[@]}"
-    do
-        info "Installing $lib if not present"
-        sudo apt install $lib -q --yes > /dev/null
-        success "$lib is installed"
-    done
+    if command -v pacman &> /dev/null; then
+        sudo pacman -Sy --noconfirm > /dev/null
+        for lib in "${dependencies[@]}"
+        do
+            info "Installing $lib if not present"
+            sudo pacman -S --noconfirm --needed $lib > /dev/null
+            success "$lib is installed"
+        done
+    elif command -v apt-get &> /dev/null || command -v apt &> /dev/null; then
+        sudo apt update -q > /dev/null
+        for lib in "${dependencies[@]}"
+        do
+            info "Installing $lib if not present"
+            sudo apt install $lib -q --yes > /dev/null
+            success "$lib is installed"
+        done
+    elif command -v dnf &> /dev/null; then
+        sudo dnf check-update -q > /dev/null || true
+        for lib in "${dependencies[@]}"
+        do
+            info "Installing $lib if not present"
+            sudo dnf install -y -q $lib > /dev/null
+            success "$lib is installed"
+        done
+    else
+        error "No supported package manager found (pacman, apt, dnf)."
+    fi
 }
 
 # verifies environment and installs dependencies (os specific)
@@ -214,13 +234,20 @@ grab_nerd_fonts(){
     unzip FiraCode.zip -d FiraCode
     unzip RobotoMono.zip -d RobotoMono
     info "installing Nerd Fonts"
+    verify_directory ~/.local/share/fonts
     cp Meslo/*.ttf ~/.local/share/fonts/
     cp FiraCode/*.ttf ~/.local/share/fonts/
     cp RobotoMono/*.ttf ~/.local/share/fonts/
     # Check if fc-cache is installed
     if ! command -v fc-cache &> /dev/null; then
         echo "fc-cache not found. Installing fontconfig..."
-        sudo apt-get update && sudo apt-get install -y fontconfig
+        if command -v pacman &> /dev/null; then
+            sudo pacman -S --noconfirm --needed fontconfig
+        elif command -v apt-get &> /dev/null; then
+            sudo apt-get update && sudo apt-get install -y fontconfig
+        elif command -v dnf &> /dev/null; then
+            sudo dnf install -y fontconfig
+        fi
     else
         echo "fc-cache is already installed. Skipping installation."
     fi
