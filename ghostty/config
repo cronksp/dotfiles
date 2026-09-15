@@ -1,0 +1,27 @@
+# -------------------------------------------------------------------
+# Ghostty Configuration
+# Symlink to ~/.config/ghostty/config
+# -------------------------------------------------------------------
+
+# Font
+font-family = "JetBrainsMono Nerd Font"
+font-size = 14
+font-feature = ["+calt", "+liga", "+dlig"]
+
+# Theme (Gruvbox Dark to match Starship prompt)
+theme = "GruvboxDark"
+
+# Window & Padding
+window-padding-x = 12
+window-padding-y = 10
+window-padding-balance = true
+background-opacity = 0.95
+background-blur-radius = 20
+
+# Cursor
+cursor-style = bar
+cursor-style-blink = true
+
+# Shell Integration
+shell-integration = zsh
+macos-titlebar-style = transparent

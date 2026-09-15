@@ -1,477 +1,301 @@
-#!/bin/bash
-### This script is based on the following:https://github.com/ThorstenHans/dotfiles/blob/master/install.sh ###
-# This script installs the dotfiles in this repository via symlinks
-# It also installs oh-my-zsh and some plugins, powerline fonts, and Nerd Fonts
+#!/usr/bin/env bash
+#
+# Dotfiles Installation & Provisioning Script
+# Supports Arch Linux / Omarchy, macOS, Debian/Ubuntu, and DevContainers
+#
+set -euo pipefail
 
-# Exit immediately if a command exits with a non-zero status.
-set -e
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
+SKIP_FONTS=false
 
-# capture working directory
-working_dir=$(pwd)
-dependencies=(curl zsh git unzip wget)
-os_type=$(uname)
+# CLI arguments
+for arg in "$@"; do
+    case "$arg" in
+        --no-fonts|--quick|-q)
+            SKIP_FONTS=true
+            ;;
+    esac
+done
 
+# Detect container environments where host renders fonts
+if [[ -n "${CODESPACES:-}" || -n "${DEVCONTAINER:-}" || -n "${REMOTE_CONTAINERS:-}" ]]; then
+    SKIP_FONTS=true
+fi
 
-
-# prints an info to the screen
 info() {
-    printf "\r  [\033[00;34mINFO\033[0m] $1\n"
+    printf "\r  [\033[00;34mINFO\033[0m] %s\n" "$1"
 }
 
-# prints a success-message to the screen
 success() {
-    printf "\r\033[2K  [\033[00;32m OK \033[0m] $1\n"
-    echo ""
+    printf "\r\033[2K  [\033[00;32m OK \033[0m] %s\n\n" "$1"
 }
 
-# prints an error-message to the screen and exits the app
-error(){
-    printf "\r\033[2K  [\033[0;31mFAIL\033[0m] $1\n"
-    exit
+warn() {
+    printf "\r\033[2K  [\033[00;33mWARN\033[0m] %s\n" "$1"
 }
 
-# changes the default shell to ZSH
-change_shell() {
-    info "Changing Shell to ZSH"
-    chsh -s $(which zsh)
-    success "Shell set to ZSH"
+error() {
+    printf "\r\033[2K  [\033[0;31mFAIL\033[0m] %s\n" "$1"
+    exit 1
 }
 
-# creates a backup-copy of a file
-backup_file() {
-    if test -f $1; then
-        info "Creating backup for existing $1"
-        mv $1 $1.backup
-        success "Backup created for $1 at $1.backup"
-    fi
-}
-
-# verifies that Homebrew is installed on the Mac
-verify_homebrew(){
-    if  ! command -v brew &> /dev/null ; then
-        error "Homebrew not installed. Please install brew first"
-        # todo: install brew at some point automatically
-        exit 1 
-    fi
-}
-
-# TODO - review this function
-# verifies that dependencies are installed on the Mac
-verify_mac_dependencies(){
-    for lib in "${dependencies[@]}"
-    do
-        info "Installing $lib if not present"
-        brew ls --versions $lib || brew install $lib
-        success "$lib is installed"
-    done
-}
-
-# TODO - review this function
-# verifies that dependencies are installed on Linux
-verify_linux_dependencies(){
-    if command -v pacman &> /dev/null; then
-        sudo pacman -Sy --noconfirm > /dev/null
-        for lib in "${dependencies[@]}"
-        do
-            info "Installing $lib if not present"
-            sudo pacman -S --noconfirm --needed $lib > /dev/null
-            success "$lib is installed"
-        done
-    elif command -v apt-get &> /dev/null || command -v apt &> /dev/null; then
-        sudo apt update -q > /dev/null
-        for lib in "${dependencies[@]}"
-        do
-            info "Installing $lib if not present"
-            sudo apt install $lib -q --yes > /dev/null
-            success "$lib is installed"
-        done
-    elif command -v dnf &> /dev/null; then
-        sudo dnf check-update -q > /dev/null || true
-        for lib in "${dependencies[@]}"
-        do
-            info "Installing $lib if not present"
-            sudo dnf install -y -q $lib > /dev/null
-            success "$lib is installed"
-        done
+download_file() {
+    local url="$1"
+    local output="$2"
+    if command -v curl >/dev/null 2>&1; then
+        curl -fsSL "$url" -o "$output"
+    elif command -v wget >/dev/null 2>&1; then
+        wget -q "$url" -O "$output"
     else
-        error "No supported package manager found (pacman, apt, dnf)."
+        error "Neither curl nor wget is available for downloading $url"
     fi
 }
 
-# verifies environment and installs dependencies (os specific)
-verify_runtime(){
-    #os_type=$(uname)
-    case "$os_type" in 
-        "Darwin")
-        {
-            info "Running on MacOS - Verifying Dependencies"
-            sleep 2
-            verify_homebrew
-            verify_mac_dependencies
-            install_fonts
-            # TODO - review os specific installs
-            install_terminal_tools
-            os_specific_installs_macOS
-        } ;;
-        "Linux" )
-        {
-            info "Running on Linux - Verifying Dependencies"
-            sleep 2
-            verify_linux_dependencies
-            install_fonts
-            # TODO - review os specific installs
-            install_terminal_tools
-            os_specific_installs_linux
-        };;
-        *)
-        {
-            error "Unsupported OS"
-            #TODO add support for other OS (windows, etc.)
-        };;
-    esac
-}
+detect_platform() {
+    OS="$(uname -s)"
+    DISTRO="unknown"
 
-# installs fonts
-install_fonts(){
-    info "Installing fonts"
-    grab_powerline_fonts
-    # get_nerd_fonts based on OS
-    #os_type=$(uname)  # this might not be needed here, its already set in verify_runtime
-    case "$os_type" in 
-        "Darwin")
-        {
-            info "Running on MacOS"
-            grab_nerd_fonts_on_macOS
-        } ;;
-        "Linux" )
-        {
-            info "Running on Linux"
-            grab_nerd_fonts
-        };;
-        *)
-        {
-            error "Unsupported OS"
-            #TODO add support for other OS (windows, etc.)
-        };;
-    esac
-}
-
-# installs dependencies on macOS
-os_specific_installs_macOS(){
-    info "Installing OS specific tools on MacOS"
-}
-
-# installs dependencies on Linux
-os_specific_installs_linux(){
-    info "Installing OS specific tools on Linux"
-}
-
-# installs terminal tools
-install_terminal_tools(){
-    info "Installing terminal tools"
-    # install oh-my-zsh
-    install_oh_my_zsh
-    # install and link starship
-    install_starship
-    link_starship_config
-}
-
-# creates a file link
-link_file(){
-    info "Linking $2"
-    ln -sf $1 $2
-    success "$2 linked"
-}
-
-# creates a directory if it doesnt exist
-verify_directory(){
-    if test ! -d $1; then
-        mkdir -p $1
-        success "directory $1 created"
-    fi
-}
-
-# grab powerline fonts
-grab_powerline_fonts(){
-    info "Grabbing powerline fonts"
-    info "https://github.com/powerline/fonts.git"
-
-    # powerline fonts for zsh agnoster theme
-    info "creating tempFonts directory"
-    cd ~ && verify_directory ~/tempFonts
-    info "move to tempFonts directory"
-    cd ~/tempFonts
-    info "cloning powerline fonts"
-    git clone https://github.com/powerline/fonts.git
-    info "moving to fonts directory"
-    cd fonts
-    info "installing powerline fonts"
-    ./install.sh
-    info "moving back to tempFonts directory && removing fonts directory"
-    cd .. && rm -rf fonts
-    info "moving back to working directory && removing tempFonts directory"
-    cd $working_dir && rm -rf ~/tempFonts
-    success "Powerline fonts installed"
-}
-
-# TODO - find a common way to grab fonts on all platforms
-# grab nerd fonts
-grab_nerd_fonts(){
-    info "Grabbing Nerd Fonts"
-    info "https://github.com/ryanoasis/nerd-fonts"
-
-    # nerd fonts
-    info "creating tempNerdFonts directory"
-    cd ~ && verify_directory ~/tempNerdFonts
-    info "move to tempNerdFonts directory"
-    cd ~/tempNerdFonts
-    info "downloading Nerd Fonts"
-    wget https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/Meslo.zip
-    wget https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/FiraCode.zip
-    wget https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/RobotoMono.zip
-    info "unzipping Nerd Fonts"
-    unzip Meslo.zip -d Meslo
-    unzip FiraCode.zip -d FiraCode
-    unzip RobotoMono.zip -d RobotoMono
-    info "installing Nerd Fonts"
-    verify_directory ~/.local/share/fonts
-    cp Meslo/*.ttf ~/.local/share/fonts/
-    cp FiraCode/*.ttf ~/.local/share/fonts/
-    cp RobotoMono/*.ttf ~/.local/share/fonts/
-    # Check if fc-cache is installed
-    if ! command -v fc-cache &> /dev/null; then
-        echo "fc-cache not found. Installing fontconfig..."
-        if command -v pacman &> /dev/null; then
-            sudo pacman -S --noconfirm --needed fontconfig
-        elif command -v apt-get &> /dev/null; then
-            sudo apt-get update && sudo apt-get install -y fontconfig
-        elif command -v dnf &> /dev/null; then
-            sudo dnf install -y fontconfig
-        fi
-    else
-        echo "fc-cache is already installed. Skipping installation."
-    fi
-    info "updating font cache"
-    fc-cache -fv
-    info "removing tempNerdFonts directory"
-    cd $working_dir && rm -rf ~/tempNerdFonts
-    success "Nerd Fonts installed"
-}
-
-# TODO - find a common way to grab fonts on all platforms
-# grab nerd fonts on macOS (curl)
-grab_nerd_fonts_on_macOS(){
-    info "Grabbing Nerd Fonts"
-    info "https://github.com/ryanoasis/nerd-fonts"
-
-    # nerd fonts
-    info "creating tempNerdFonts directory"
-    cd ~ && verify_directory ~/tempNerdFonts
-    info "move to tempNerdFonts directory"
-    cd ~/tempNerdFonts
-    info "downloading Nerd Fonts"
-    curl -LO https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/Meslo.zip
-    curl -LO https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/FiraCode.zip
-    curl -LO https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/RobotoMono.zip
-    info "unzipping Nerd Fonts"
-    unzip Meslo.zip -d Meslo
-    unzip FiraCode.zip -d FiraCode
-    unzip RobotoMono.zip -d RobotoMono
-    info "installing Nerd Fonts"
-    cp Meslo/*.ttf ~/Library/Fonts/
-    cp FiraCode/*.ttf ~/Library/Fonts/
-    cp RobotoMono/*.ttf ~/Library/Fonts/
-    info "removing tempNerdFonts directory"
-    cd $working_dir && rm -rf ~/tempNerdFonts
-    success "Nerd Fonts installed"
-}
-
-install_oh_my_zsh(){
-    # oh-my-zsh & plugins
-    info "Installing oh-my-zsh"
-
-    # Check if the .oh-my-zsh directory exists
-    if [ -d "$HOME/.oh-my-zsh" ]; then
-        info ".oh-my-zsh directory already exists"
-        #read -p "Do you want to remove the existing .oh-my-zsh directory? (y/n): " choice
-        # Default to 'y' to allow for non-interactive installs
-        choice="y"
-        if [ "$choice" = "y" ]; then
-            rm -rf "$HOME/.oh-my-zsh"
-            info "Removed existing .oh-my-zsh directory"
-        else
-            error "Installation aborted. Please remove or rename the existing .oh-my-zsh directory and try again."
-            return
-        fi
-    fi
-    # TODO - verify oh-my-zsh installation includes oh-my-zsh.sh file
-    #wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
-    wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O - | zsh || true
-    success "oh-my-zsh installed"
-
-    info "Installing zsh-autosuggestions & zsh-syntax-highlighting"
-
-    # Remove existing zsh-autosuggestions directory if it exists
-    if [ -d "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" ]; then
-        info "Removing existing zsh-autosuggestions directory"
-        rm -rf "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions"
-    fi
-    zsh -c 'git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions'
-
-    # Remove existing zsh-syntax-highlighting directory if it exists
-    if [ -d "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" ]; then
-        info "Removing existing zsh-syntax-highlighting directory"
-        rm -rf "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting"
-    fi
-    zsh -c 'git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting'
-
-    success "zsh-autosuggestions & zsh-syntax-highlighting installed"
-}
-
-# cronksp - starship is a cross-shell prompt, cooler than oh-my-zsh
-# installs Starship prompt
-#install_starship() {
-    #info "Installing Starship prompt"
-    #curl --cacert /etc/ssl/certs/ca-certificates.crt -sSL
-    #if curl --cacert /etc/ssl/certs/ca-certificates.crt -fsSL https://starship.rs/install.sh | sh -s -- -y; then
-        #success "Starship prompt installed"
-        # Verify Starship version
-        #starship_version=$(starship --version)
-        #info "Starship version: $starship_version"
-    #else
-        #error "Failed to install Starship prompt"
-    #fi
-#}
-
-# TODO - ensure this works
-install_starship() {
-    info "Installing Starship prompt"
-
-    case "$os_type" in
-        "Darwin")
-            # macOS
-            if command -v brew &> /dev/null; then
-                brew install starship
-            else
-                error "Homebrew not found. Please install Homebrew first."
-                return 1
+    case "$OS" in
+        Linux)
+            if [[ -f /etc/os-release ]]; then
+                # shellcheck source=/dev/null
+                source /etc/os-release
+                DISTRO="${ID:-unknown}"
             fi
             ;;
-        "Linux")
-            # Linux
-            if command -v apt &> /dev/null; then
-                # Debian/Ubuntu
-                #sudo apt update -q && sudo apt install -y starship
-                if curl --cacert /etc/ssl/certs/ca-certificates.crt -fsSL https://starship.rs/install.sh | sh -s -- -y; then
-                    success "Starship prompt installed"
-                    # Verify Starship version
-                    starship_version=$(starship --version)
-                    info "Starship version: $starship_version"
+        Darwin)
+            DISTRO="macos"
+            ;;
+        *)
+            DISTRO="unknown"
+            ;;
+    esac
+}
+
+install_packages() {
+    info "Checking required packages for platform: $DISTRO ($OS)..."
+
+    case "$DISTRO" in
+        arch|omarchy|endeavouros|manjaro)
+            info "Arch-based distribution detected."
+            local pkgs=()
+            command -v git >/dev/null 2>&1 || pkgs+=(git)
+            command -v curl >/dev/null 2>&1 || pkgs+=(curl)
+            command -v unzip >/dev/null 2>&1 || pkgs+=(unzip)
+            command -v fzf >/dev/null 2>&1 || pkgs+=(fzf)
+            command -v starship >/dev/null 2>&1 || pkgs+=(starship)
+
+            if [[ ${#pkgs[@]} -gt 0 ]]; then
+                info "Installing missing packages: ${pkgs[*]}"
+                if [[ $EUID -eq 0 ]]; then
+                    pacman -S --noconfirm --needed "${pkgs[@]}"
+                elif command -v sudo >/dev/null 2>&1 && (sudo -n true 2>/dev/null || [[ -t 0 ]]); then
+                    sudo pacman -S --noconfirm --needed "${pkgs[@]}"
                 else
-                    error "Failed to install Starship prompt"
+                    warn "Cannot elevate with sudo. Please install manually: pacman -S ${pkgs[*]}"
                 fi
-            elif command -v dnf &> /dev/null; then
-                # Fedora
-                sudo dnf install -y starship
-            elif command -v pacman &> /dev/null; then
-                # Arch Linux
-                sudo pacman -S --noconfirm starship
             else
-                # Fallback to curl if no package manager is detected
+                success "All required base packages are already installed"
+            fi
+            ;;
+        macos)
+            info "macOS detected."
+            if ! command -v brew >/dev/null 2>&1; then
+                warn "Homebrew not found. Please install Homebrew from https://brew.sh"
+            else
+                local brew_pkgs=()
+                command -v git >/dev/null 2>&1 || brew_pkgs+=(git)
+                command -v curl >/dev/null 2>&1 || brew_pkgs+=(curl)
+                command -v unzip >/dev/null 2>&1 || brew_pkgs+=(unzip)
+                command -v fzf >/dev/null 2>&1 || brew_pkgs+=(fzf)
+                command -v starship >/dev/null 2>&1 || brew_pkgs+=(starship)
+
+                if [[ ${#brew_pkgs[@]} -gt 0 ]]; then
+                    info "Installing missing packages via brew: ${brew_pkgs[*]}"
+                    brew install "${brew_pkgs[@]}"
+                else
+                    success "All required base packages are already installed"
+                fi
+            fi
+            ;;
+        ubuntu|debian|pop)
+            info "Debian/Ubuntu-based distribution detected."
+            local apt_pkgs=()
+            command -v git >/dev/null 2>&1 || apt_pkgs+=(git)
+            command -v curl >/dev/null 2>&1 || apt_pkgs+=(curl)
+            command -v unzip >/dev/null 2>&1 || apt_pkgs+=(unzip)
+            command -v fzf >/dev/null 2>&1 || apt_pkgs+=(fzf)
+
+            if [[ ${#apt_pkgs[@]} -gt 0 ]]; then
+                if [[ $EUID -eq 0 ]]; then
+                    apt-get update -qq && apt-get install -y "${apt_pkgs[@]}"
+                elif command -v sudo >/dev/null 2>&1 && (sudo -n true 2>/dev/null || [[ -t 0 ]]); then
+                    sudo apt-get update -qq && sudo apt-get install -y "${apt_pkgs[@]}"
+                fi
+            fi
+
+            if ! command -v starship >/dev/null 2>&1; then
+                info "Installing Starship prompt via official installer script..."
                 curl -fsSL https://starship.rs/install.sh | sh -s -- -y
             fi
             ;;
-        "MINGW"*|"CYGWIN"*|"MSYS"*)
-            # Windows (via Scoop or Chocolatey)
-            if command -v scoop &> /dev/null; then
-                scoop install starship
-            elif command -v choco &> /dev/null; then
-                choco install starship
-            else
-                error "No supported package manager found on Windows. Please install Scoop or Chocolatey."
-                return 1
+        *)
+            warn "Unrecognized OS/distro ($DISTRO). Ensuring Starship is installed..."
+            if ! command -v starship >/dev/null 2>&1; then
+                curl -fsSL https://starship.rs/install.sh | sh -s -- -y
             fi
             ;;
-        *)
-            # Unsupported OS
-            error "Unsupported OS. Please install Starship manually from https://starship.rs."
-            return 1
-            ;;
     esac
+}
 
-    # Verify installation
-    if command -v starship &> /dev/null; then
-        starship_version=$(starship --version)
-        success "Starship prompt installed successfully (version: $starship_version)"
+install_fonts() {
+    if [[ "$SKIP_FONTS" == true ]]; then
+        info "Skipping local font download (container/quick mode active; host terminal renders fonts)."
+        return 0
+    fi
+
+    info "Checking modern coding fonts..."
+
+    local FONT_DIR
+    if [[ "$OS" == "Darwin" ]]; then
+        FONT_DIR="$HOME/Library/Fonts"
     else
-        error "Failed to install Starship prompt."
+        FONT_DIR="$HOME/.local/share/fonts"
+        mkdir -p "$FONT_DIR"
+    fi
+
+    # Check if JetBrainsMono and Monaspace or other nerd fonts are present
+    if command -v fc-list >/dev/null 2>&1; then
+        if fc-list : family | grep -iq "JetBrainsMono Nerd Font"; then
+            success "Coding fonts are already installed"
+            return 0
+        fi
+    fi
+
+    local TEMP_DIR
+    TEMP_DIR=$(mktemp -d)
+    trap 'rm -rf "${TEMP_DIR:-}"' EXIT
+
+    cd "$TEMP_DIR"
+
+    local NERD_FONT_VERSION="v3.2.1"
+    local FONTS=("JetBrainsMono" "FiraCode" "ComicShannsMono")
+
+    for font in "${FONTS[@]}"; do
+        info "Downloading $font (Nerd Font $NERD_FONT_VERSION)..."
+        if download_file "https://github.com/ryanoasis/nerd-fonts/releases/download/${NERD_FONT_VERSION}/${font}.zip" "${font}.zip"; then
+            unzip -q -o "${font}.zip" -d "$font"
+            find "$font" -type f \( -name "*.ttf" -o -name "*.otf" \) -exec cp {} "$FONT_DIR/" \;
+            success "$font installed"
+        fi
+    done
+
+    # Monaspace
+    info "Downloading Monaspace..."
+    if download_file "https://github.com/githubnext/monaspace/releases/download/v1.101/monaspace-v1.101.zip" "monaspace.zip"; then
+        unzip -q -o "monaspace.zip" -d "monaspace"
+        find monaspace -type f \( -name "*.otf" -o -name "*.ttf" \) -exec cp {} "$FONT_DIR/" \;
+        success "Monaspace installed"
+    fi
+
+    if [[ "$OS" == "Linux" ]]; then
+        if command -v fc-cache >/dev/null 2>&1; then
+            fc-cache -fv >/dev/null 2>&1 || true
+        fi
+    fi
+
+    cd "$DOTFILES_DIR"
+    rm -rf "$TEMP_DIR"
+    trap - EXIT
+    success "Modern coding fonts verified and installed"
+}
+
+backup_and_link() {
+    local src="$1"
+    local dst="$2"
+
+    mkdir -p "$(dirname "$dst")"
+
+    if [[ -L "$dst" && "$(readlink -f "$dst")" == "$(readlink -f "$src")" ]]; then
+        success "Already linked: $dst -> $src"
+        return 0
+    fi
+
+    if [[ -e "$dst" || -L "$dst" ]]; then
+        local backup="${dst}.backup.${TIMESTAMP}"
+        warn "Existing file found at $dst. Backing up to $backup"
+        mv "$dst" "$backup"
+    fi
+
+    ln -s "$src" "$dst"
+    success "Linked: $dst -> $src"
+}
+
+setup_directories() {
+    mkdir -p "$HOME/.local/bin"
+    mkdir -p "$HOME/.local/state/starship"
+    mkdir -p "$HOME/.config/starship"
+}
+
+link_dotfiles() {
+    info "Linking dotfiles and binaries..."
+
+    # Theme CLI
+    chmod +x "$DOTFILES_DIR/bin/starship-seasonal-theme"
+    backup_and_link "$DOTFILES_DIR/bin/starship-seasonal-theme" "$HOME/.local/bin/starship-seasonal-theme"
+
+    # Starship config template
+    backup_and_link "$DOTFILES_DIR/starship/starship.toml" "$HOME/.config/starship/starship.toml"
+
+    # Ghostty config (if ghostty is installed or config directory exists)
+    if [[ "$OS" == "Darwin" ]] || [[ -d "$HOME/.config/ghostty" ]]; then
+        if [[ -f "$DOTFILES_DIR/ghostty/config" ]]; then
+            backup_and_link "$DOTFILES_DIR/ghostty/config" "$HOME/.config/ghostty/config"
+        fi
+    fi
+
+    # Shell configs
+    backup_and_link "$DOTFILES_DIR/bash/.bashrc" "$HOME/.bashrc"
+    backup_and_link "$DOTFILES_DIR/zsh/.zshrc" "$HOME/.zshrc"
+    backup_and_link "$DOTFILES_DIR/zsh/.zprofile" "$HOME/.zprofile"
+    backup_and_link "$DOTFILES_DIR/zsh/.zshenv" "$HOME/.zshenv"
+
+    # AI Workspace Bridge
+    local AI_REPO="${AI_HOME:-$HOME/dev/repos/ai}"
+    if [[ -d "$AI_REPO" && -f "$AI_REPO/rules.md" ]]; then
+        info "Linking AI workspace rules to home directory..."
+        backup_and_link "$AI_REPO/rules.md" "$HOME/.cursorrules"
+        backup_and_link "$AI_REPO/rules.md" "$HOME/.windsurfrules"
     fi
 }
 
-# creates a symlink for starship.toml
-link_starship_config() {
-    info "Linking starship.toml"
-    STARSHIP_CONFIG_DIR="$HOME/.config/starship"
-    STARSHIP_CONFIG_FILE="$STARSHIP_CONFIG_DIR/starship.toml"
-    DOTFILES_DIR="$working_dir"
-
-    # Create the target directory if it doesn't exist
-    verify_directory "$STARSHIP_CONFIG_DIR"
-
-    # Remove any existing symlink or file at the target location
-    if [ -L "$STARSHIP_CONFIG_FILE" ] || [ -e "$STARSHIP_CONFIG_FILE" ]; then
-        rm -f "$STARSHIP_CONFIG_FILE"
+initialize_theme() {
+    info "Initializing seasonal Starship theme..."
+    if [[ -x "$HOME/.local/bin/starship-seasonal-theme" ]]; then
+        "$HOME/.local/bin/starship-seasonal-theme" --ensure
+        local current_theme
+        current_theme="$("$HOME/.local/bin/starship-seasonal-theme" current)"
+        success "Starship initialized with active theme: $current_theme"
+    else
+        warn "starship-seasonal-theme binary not executable yet."
     fi
-
-    # Create the symlink
-    link_file "$DOTFILES_DIR/starship/.config/starship.toml" "$STARSHIP_CONFIG_FILE"
 }
 
-# verify runtime environment
-verify_runtime
+main() {
+    printf "============================================\n"
+    printf "      Dotfiles Provisioning & Install       \n"
+    printf "============================================\n\n"
 
-#install fonts
-#grab_powerline_fonts
-#grab_nerd_fonts
+    detect_platform
+    install_packages
+    install_fonts
+    setup_directories
+    link_dotfiles
+    initialize_theme
 
-# oh-my-zsh & plugins
-#install_oh_my_zsh
+    success "Dotfiles installation complete! 🚀"
+    info "Restart your terminal or run: source ~/.bashrc (or source ~/.zshrc)"
+}
 
-# starship prompt
-#install_starship
-
-# link starship.toml
-#link_starship_config
-
-#Set git config explicitly
-git config --global user.name "Shane Cronk"
-git config --global user.email "Shane.Cronk7@gmail.com"
-
-#files=("$HOME/.zshrc" "$HOME/.gitconfig" "$HOME/.gitignore" "$HOME/.editorconfig" "$HOME/.editorconfig" "$HOME/.npmrc" "$HOME/.zshenv")
-files=("$HOME/.zshrc" "$HOME/.zshenv" "$HOME/.zprofile")
-
-for f in "${files[@]}"
-do
-    info "Backing up $f"
-    backup_file $f
-    #BUG - this is not working as expected, only the first in the list is backed up
-done
-
-info "Linking dotfiles"
-
-link_file "${working_dir}/zsh/.zshrc" "${HOME}/.zshrc"
-link_file "${working_dir}/zsh/.zshenv" "${HOME}/.zshenv"
-link_file "${working_dir}/zsh/.zprofile" "${HOME}/.zprofile"
-
-#link_file "${working_dir}/git/config" "${HOME}/.gitconfig"
-#link_file "${working_dir}/git/ignore" "${HOME}/.gitignore"
-#link_file "${working_dir}/editorconfig/config" "${HOME}/.editorconfig"
-#link_file "${working_dir}/npm/config" "${HOME}/.npmrc"
-#verify_directory $HOME/.azure/
-#link_file "${working_dir}/azure-cli/config" "${HOME}/.azure/config"
-#verify_directory $HOME/.config/gh
-#link_file "${working_dir}/github-cli/config" "${HOME}/.config/gh/config.yml"
-
-success "All done! 🚀"
-
-info "Either restart your terminal instance, or just invoke zsh"
+main "$@"
