@@ -2,8 +2,14 @@
 # Select a named Starship palette by season/holiday, or keep a manual override.
 set -euo pipefail
 
-# Resolve script directory and repo root
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Resolve canonical script directory and repo root even through symlinks
+SOURCE="${BASH_SOURCE[0]}"
+while [[ -L "$SOURCE" ]]; do
+  DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # Locate starship template
@@ -13,12 +19,16 @@ elif [[ -r "$REPO_DIR/starship/starship.toml" ]]; then
   template_path="$REPO_DIR/starship/starship.toml"
 elif [[ -r "$REPO_DIR/starship/.config/starship.toml" ]]; then
   template_path="$REPO_DIR/starship/.config/starship.toml"
+elif [[ -r "$HOME/.config/starship/starship.toml" ]]; then
+  template_path="$HOME/.config/starship/starship.toml"
 elif [[ -r "$HOME/.config/starship/starship.template.toml" ]]; then
   template_path="$HOME/.config/starship/starship.template.toml"
 elif [[ -r "$HOME/dev/repos/dotfiles/starship/starship.toml" ]]; then
   template_path="$HOME/dev/repos/dotfiles/starship/starship.toml"
-else
+elif [[ -r "$HOME/dev/repos/dotfiles/starship/.config/starship.toml" ]]; then
   template_path="$HOME/dev/repos/dotfiles/starship/.config/starship.toml"
+else
+  template_path="$REPO_DIR/starship/starship.toml"
 fi
 
 state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/starship"
