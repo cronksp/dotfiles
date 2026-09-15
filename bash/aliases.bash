@@ -66,3 +66,30 @@ if [ -d "$AI_HOME" ]; then
         export PATH="$AI_HOME/bin:$PATH"
     fi
 fi
+
+# --- Python & Virtualenvwrapper ---
+alias python='python3'
+alias pip='pip3'
+alias mkv='mkvirtualenv'
+alias lsv='lsvirtualenv'
+alias lsvb='lsvirtualenv -b'
+alias rmv='rmvirtualenv'
+alias cpv='cpvirtualenv'
+alias dve='deactivate'
+alias wkv='workon'
+
+if command -v python3 &> /dev/null; then
+    export VIRTUALENVWRAPPER_PYTHON=$(/usr/bin/env python3 -c "import sys; print(sys.executable)" 2>/dev/null || command -v python3)
+    export WORKON_HOME="$HOME/.virtualenvs"
+    if [ -n "$CODESPACES" ] || [ -n "$DEVCONTAINER" ]; then
+        export PROJECT_HOME=/workspaces
+    else
+        export PROJECT_HOME="$DEV_DIR"
+    fi
+    if command -v virtualenvwrapper.sh &>/dev/null; then
+        source "$(command -v virtualenvwrapper.sh)"
+    elif [ -f /usr/local/bin/virtualenvwrapper.sh ]; then
+        source /usr/local/bin/virtualenvwrapper.sh
+    fi
+fi
+
